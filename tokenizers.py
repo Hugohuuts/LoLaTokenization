@@ -24,22 +24,33 @@ def split_noun_hybrid(noun):
     return components if components else [noun]
 
 
-def pos_tokenizer(sent, tags):
+def pos_tokenizer(premises, hypothesis, tags):
     """
     Tokenizer that splits words based on their respective POS tags
     """
-    s = []
-    for token in NLP(sent):
+    p = []
+    for token in NLP(premises):
       if token.pos_ in tags:
         components = split_noun_hybrid(token.text)
-        s.extend(components)
+        p.extend(components)
         #for char in token.text:
           #if char not in encoding.special_tokens:
             #s.append(char)
       else:
-        s.append(token.text)
-    return ' '.join(s)
+        p.append(token.text)
+    h = []
+    for token in NLP(hypothesis):
+      if token.pos_ in tags:
+        components = split_noun_hybrid(token.text)
+        h.extend(components)
+        #for char in token.text:
+          #if char not in encoding.special_tokens:
+            #s.append(char)
+      else:
+        h.append(token.text)
+    return ' '.join(p), ' '.join(h)
 
-sent = "This is a sample sentence that includes excrutiatingly lengthy components and rainfall can be divided into smaller parts."
-print(pos_tokenizer(sent, ['NOUN', 'PROPN']))
+premises = "The cat is large. An ant is small."
+hypothesis = "The cat is bigger than the ant."
+print(pos_tokenizer(premises, hypothesis, ['NOUN', 'PROPN']))
 
