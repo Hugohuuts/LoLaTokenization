@@ -2,3 +2,4 @@ models/
 *.sh
 .env
 env_utils.py
+__pycache__
