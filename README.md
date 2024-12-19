@@ -2,11 +2,11 @@
 
 By:
 
-- Yme Boland (xxxxxxx)
-- Shane Siwpersad (xxxxxxx)
-- Eduard Köntöş (xxxxxxx)
-- Hugo Voorheijen (1706276)
-- Julius Bijkerk (1987011)
+- Yme Boland
+- Shane Siwpersad
+- Eduard Köntöş
+- Hugo Voorheijen
+- Julius Bijkerk
 
 ## Project Overview
 
