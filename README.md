@@ -1,8 +1,16 @@
 # Custom Tokenization and NLI Performance
 
+By:
+
+- Yme Boland
+- Shane Siwpersad
+- Eduard Köntöş
+- Hugo Voorheijen
+- Julius Bijkerk
+
 ## Project Overview
 
-This repository is part of a group project for the Logic and Language course at Utrecht Univerity.
+This repository is part of a group project for the Logic and Language course at Utrecht Univerity, taught by Dr. Lasha Abzianidze PhD.
 We will be exploring the impact of different tokenization techniques on Natural Language Inference (NLI), using pre-trained models like BERT, RoBERTa, and other (foundational) models.
 
 ## Objectives
