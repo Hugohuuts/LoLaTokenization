@@ -50,7 +50,14 @@ def pos_tokenizer(premises, hypothesis, tags):
         h.append(token.text)
     return ' '.join(p), ' '.join(h)
 
+def noun_tokenizer(premises, hypothesis):
+   return pos_tokenizer(premises, hypothesis, ['NOUN', 'PROPN'])
+
+def verb_tokenizer(premises, hypothesis):
+   return pos_tokenizer(premises, hypothesis, ['NOUN', 'PROPN']) 
+
 premises = "The cat is large. An ant is small."
 hypothesis = "The cat is bigger than the ant."
 print(pos_tokenizer(premises, hypothesis, ['NOUN', 'PROPN']))
+print(pos_tokenizer(premises, hypothesis, ['VERB']))
 
