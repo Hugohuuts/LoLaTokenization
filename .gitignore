@@ -3,3 +3,4 @@ models/
 .env
 env_utils.py
 __pycache__
+data/

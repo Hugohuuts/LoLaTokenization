@@ -1,6 +1,8 @@
 from transformers import AutoTokenizer, BatchEncoding
 import torch
 import warnings
+import numpy as np
+from typing import Iterable
 
 class MissingTokenizationFunctionError(Exception):
     pass
@@ -20,6 +22,7 @@ class CustomTokenizerGeneral:
         self.vocabulary = tokenizer.vocab
         self.original_tokenizer = tokenizer
         self.special_space_token = special_space_token
+        self.special_tokens_set = set(tokenizer.special_tokens_map.values())
         self.valid_tokens = set(self.vocabulary.keys())
         self.original_tokenizer_name = tokenizer.name_or_path
         self.vocabulary_id2tok = {tok_id:tok for tok, tok_id in self.vocabulary.items()}
@@ -104,9 +107,29 @@ class CustomTokenizerGeneral:
         for token in token_list:
             aux_token_list += self.get_token_id(token)
 
+        # print(aux_token_list)
         return aux_token_list
+    
+    # [tensor()] -> tensor() - ndarray() -> int
 
-    def decode(self, token_list: list[int], remove_special_markings: bool=False) -> str:
+    def _deep_convert_to_numpy(self, x: torch.Tensor):
+        if not isinstance(x, (list, np.ndarray, torch.Tensor)):
+            return False
+        if isinstance(x, torch.Tensor):
+            next_rec = x.cpu().detach().tolist()
+        else:
+            next_rec = x
+
+        aux = []
+        for it in next_rec:
+            signal = self._deep_convert_to_numpy(it)
+            if not isinstance(signal, bool):
+                aux += [signal]
+            else:
+                aux += [it]
+        return aux
+
+    def decode(self, token_list: list[int], remove_special_markings: bool=True, remove_special_tokens: bool=True) -> str:
         """
         Decode a given list of token IDs to their string representation.
         ---
@@ -116,7 +139,12 @@ class CustomTokenizerGeneral:
         Returns:
             String of the original tokens.
         """
-        return " ".join([self.vocabulary_id2tok[token] if not remove_special_markings else self.vocabulary_id2tok[token].replace(self.special_space_token, "") for token in token_list])
+        toks = []
+        for token in token_list:
+            token = self.vocabulary_id2tok[token] if not remove_special_markings else self.vocabulary_id2tok[token].replace(self.special_space_token, "")
+            if remove_special_tokens and token not in self.special_tokens_set:
+                toks += [token.strip()]
+        return " ".join(toks)
 
     def _pad_sequence(self, token_list: list[int], padding_limit: int) -> list[int]:
         """
@@ -133,7 +161,7 @@ class CustomTokenizerGeneral:
 
         return token_list
 
-    def combine_token_list(self, tok_list_1: list[str], tok_list_2: list[str]) -> list[str]:
+    def combine_token_list(self, tok_list: list[int]|list[list[int]]) -> list[str]:
         """
         Combine two token lists based on model expected input.
         ---
@@ -143,25 +171,160 @@ class CustomTokenizerGeneral:
         Returns:
             List of token IDs interlaced with model-specific special tokens.
         """
-
+        if not tok_list:
+            return tok_list
         combined_list = None
-        overflow_length = len(tok_list_1) + len(tok_list_2)
-        # print(len(tok_list_1), len(tok_list_2), overflow_length)
         if "roberta" in self.original_tokenizer_name:
-            # max_length < 514 (bcs of end and start)
-            # 516 = 512 + 2 (bos, eos) + 2 (separators between inputs)
-            overflow_length = overflow_length if overflow_length - 508 <= 0 else overflow_length - 508
-
-            # e.g. tokl1 = 10, tokl2 = 15 ==> total=25, max=17 (15+2) ==> overflow=8 ==>tokl2 = 15-8=7
-            combined_list = [self.bos_token] + tok_list_1[:len(tok_list_1) - overflow_length] + [self.eos_token] + [self.sep_token] + tok_list_2 + [self.eos_token]
-            # print(len(combined_list), overflow_length)
+            if len(tok_list) > 1 and isinstance(tok_list[0], list): # 
+                # combined_list = [self.bos_token] + tok_list[0] + [self.eos_token] + [self.sep_token] + tok_list[1] + [self.eos_token]
+                combined_list = [self.bos_token]
+                for toks in tok_list[:-1]:
+                    combined_list += toks + [self.eos_token] + [self.sep_token]
+                combined_list += tok_list[-1] + [self.eos_token]
+            else:
+                combined_list = [self.bos_token] + tok_list + [self.eos_token]
         elif "bert" in self.original_tokenizer_name and "roberta" not in self.original_tokenizer_name:
-            overflow_length = overflow_length if overflow_length - 508 <= 0 else overflow_length - 508
-            combined_list = [self.class_token] + tok_list_1[:len(tok_list_1) - overflow_length] + [self.sep_token] + tok_list_2 + [self.sep_token]
+            if len(tok_list) > 1 and isinstance(tok_list[0], list):
+                # combined_list = [self.class_token] + tok_list[0] + [self.sep_token] + tok_list[1] + [self.sep_token]
+                combined_list = [self.class_token]
+                for toks in tok_list[:-1]:
+                    combined_list += toks + [self.sep_token]
+                combined_list += tok_list[-1] + [self.sep_token]
+            else:
+                combined_list = [self.class_token] + tok_list + [self.sep_token]
 
         return combined_list
 
-    def __call__(self, premise_hypothesis: tuple[str]|list[str], **tokenization_args) -> dict:
+    def get_offset_mapping(self, token_list):
+        running_length = 0
+        spans = []
+        for tok in token_list:
+            start_idx = running_length
+            end_idx = running_length + len(tok)
+            if tok in self.special_tokens_set:
+                spans += [(0,0)]
+                continue
+            if tok[0] == self.special_space_token:
+                start_idx += 1
+            spans += [(start_idx, end_idx)]
+            running_length = end_idx
+
+        return spans
+    
+    def get_attention_mask(self, token_id_list):
+        return [int(token_id != self.pad_token_id) for token_id in token_id_list]
+
+    def tokenize(self, text: str, **tokenization_args):
+        if tokenization_args.pop("do_lowercase", False):
+            text = text.lower()
+        toks = self.tokenization_func(text, self.separator_marker, **tokenization_args)
+        
+        if toks:
+            toks = self.replace_prefix_space_with_special(toks)
+        aux_toks = []
+        for tok in toks:
+            if tok in self.original_tokenizer.vocab.keys():
+                aux_toks += [tok]
+            else:
+                aux = tok.replace(self.special_space_token, " ")
+                aux = self.original_tokenizer.tokenize(aux)
+                aux_toks += aux
+        toks = aux_toks
+
+        return toks
+
+    def get_attention_mask_all(self, token_lists):
+        return [self.get_attention_mask(tok_list) for tok_list in token_lists]
+
+    def batch_encode(self, text_list, **tokenization_args):
+        output = {
+            "input_ids": [],
+            "attention_mask": [],
+            "offset_mapping": []
+        }
+        for text in text_list:
+            toks = self.tokenize(text)
+            tokens = self.combine_token_list(toks)
+
+            input_ids = self.encode(tokens)
+
+            output["offset_mapping"] += [self.get_offset_mapping(tokens)]
+            output["input_ids"] += [input_ids]
+
+            unk_tok_num = sum([token_id == self.unk_token_id for token_id in input_ids])
+            assert not(unk_tok_num > 0), f"There are unknown tokens in the text! {unk_tok_num} unknown tokens."
+
+        if tokenization_args.pop("padding", False) == "longest":
+            max_length = max([len(aux) for aux in output["input_ids"]])
+            padded_input_ids = []
+            offsets = []
+            for input_ids, offset in zip(output["input_ids"], output["offset_mapping"]):
+                padded_seq = self._pad_sequence(input_ids, max_length)
+                padded_input_ids += [padded_seq]
+                offset += [(0,0)] * (len(padded_seq) - len(offset))
+                offsets += [offset]
+            output["input_ids"] = padded_input_ids
+            output["offset_mapping"] = offsets
+
+        if not tokenization_args.pop("return_offsets_mapping", False):
+            output["offset_mapping"].pop()
+            
+        output["attention_mask"] = self.get_attention_mask_all(output["input_ids"])
+
+        if len(text_list) < 2:
+            for key, val in output.items():
+                if val:
+                    output[key] = val[0]
+
+        return output
+
+    def combine_encode(self, text_list, text_target_list, **tokenization_args):
+        output = {
+            "input_ids": [],
+            "attention_mask": [],
+            "offset_mapping": []
+        }
+        for text, text_target in zip(text_list, text_target_list):
+            toks_text = self.tokenize(text)
+            toks_text_target = self.tokenize(text_target)
+
+            tokens = self.combine_token_list([toks_text, toks_text_target])
+            input_ids = self.encode(tokens)
+
+            attention_mask = self.get_attention_mask(input_ids)
+
+            output["offset_mapping"] += [self.get_offset_mapping(tokens)]
+            output["input_ids"] += [input_ids]
+            output["attention_mask"] += [attention_mask]
+
+            unk_tok_num = sum([token_id == self.unk_token_id for token_id in input_ids])
+            assert not(unk_tok_num > 0), f"There are unknown tokens in the text! {unk_tok_num} unknown tokens."
+
+        if tokenization_args.pop("padding", False) == "longest":
+            max_length = max([len(aux) for aux in output["input_ids"]])
+            padded_input_ids = []
+            offsets = []
+            for input_ids, offset in zip(output["input_ids"], output["offset_mapping"]):
+                padded_seq = self._pad_sequence(input_ids, max_length)
+                padded_input_ids += [padded_seq]
+                offset += [(0,0)] * (len(padded_seq) - len(offset))
+                offsets += [offset]
+            output["input_ids"] = padded_input_ids
+            output["offset_mapping"] = offsets
+
+        if not tokenization_args.pop("return_offsets_mapping", False):
+            output["offset_mapping"].pop()
+
+        output["attention_mask"] = self.get_attention_mask_all(output["input_ids"])
+
+        if len(text_list) < 2:
+            for key, val in output.items():
+                if val:
+                    output[key] = val[0]
+
+        return output
+
+    def __call__(self, text=None, text_target=None, **tokenization_args) -> dict:
         """
         This method should output model-ready values, in the form of a dictionary with torch tensors for input IDs and attention mask
         output for the input ids should be a nested list in the following form [[<bos> P1. P2. P3 ... Pn <eos> H <eos> ]]
@@ -180,28 +343,29 @@ class CustomTokenizerGeneral:
         if not self.tokenization_func:
             raise MissingTokenizationFunctionError
         
-        do_lowercase = tokenization_args.pop("do_lowercase", False)
-        if do_lowercase:
-            premise_hypothesis = [text.lower() for text in premise_hypothesis]
+        if text is None and text_target is None:
+            raise ValueError
 
-        tokens_premises, tokens_hypothesis = self.tokenization_func(premise_hypothesis, self.separator_marker, **tokenization_args)
-        tokens_premises, tokens_hypothesis = self.replace_prefix_space_with_special(tokens_premises), self.replace_prefix_space_with_special(tokens_hypothesis)
+        if isinstance(text, (list, tuple, np.ndarray)) and text_target is None: # batch encoding, input has no corresponding target
+            output = self.batch_encode(text, **tokenization_args)
+        elif isinstance(text, str) and text_target is None:
+            output = self.batch_encode([text], **tokenization_args)
+        elif isinstance(text, (list, tuple, np.ndarray)) and isinstance(text_target, (list, tuple, np.ndarray)):
+            assert len(text) == len(text_target), "Input and target lists must have the same number of samples!"
+            output = self.combine_encode(text, text_target, **tokenization_args)
+        elif isinstance(text, str) and isinstance(text_target, str):
+            output = self.combine_encode([text], [text_target], **tokenization_args)
 
-        tokens = self.combine_token_list(tokens_premises, tokens_hypothesis)
-        input_ids = self.encode(tokens)
+        if tokenization_args.pop("return_tensors", False) == "pt":
+            for key, val in output.items():
+                if not isinstance(val, torch.Tensor):
+                    aux_t = torch.as_tensor(val)
+                    if len(aux_t.shape) > 1:
+                        output[key] = aux_t
+                    else:
+                        output[key] = torch.as_tensor([val])
 
-        unk_tok_num = sum([token_id == self.unk_token_id for token_id in input_ids])
-        assert not(unk_tok_num > 0), f"There are unknown tokens in the text! {unk_tok_num} unknown tokens."
-
-        attention_mask = [int(token_id != self.pad_token_id) for token_id in input_ids]
-
-        # input_ids on cuda
-        # attention mask on cuda
-        output = {
-            "input_ids": torch.as_tensor([input_ids], device=self.device),
-            "attention_mask": torch.as_tensor([attention_mask], device=self.device) # always 1 except for padding tokens
-        }
-
+        # print(output)
         return BatchEncoding(output)
 
 #### example of how a new custom tokenization function can be applied

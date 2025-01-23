@@ -14,6 +14,10 @@ def get_prediction(premise_hypothesis: tuple[str]|list[str], model_nli: callable
         A dictionary containing the most likely entailment `label` of the input, its `prob`, and the softmax distribution over `all_probs` .
     """
     tok_output = custom_tokenizer(premise_hypothesis, **tokenization_args)
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cpu")
+    tok_output.to(device)
+    # print(tok_output, tok_output["input_ids"].shape, tok_output["attention_mask"].shape)
     model_outputs = model_nli(**tok_output)
     probs = torch.softmax(model_outputs.logits, dim=1).tolist()[0]
     output = {

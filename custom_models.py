@@ -25,7 +25,7 @@ class CustomRoberta(CustomModelAbstract):
 
     def forward(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None):
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
-
+        # print(input_ids.shape, attention_mask.shape)
         outputs = self.model.roberta(
             input_ids,
             attention_mask=attention_mask,
