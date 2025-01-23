@@ -70,7 +70,7 @@ if __name__ == "__main__":
         data_df["sent1"] += [datum["sentence1"]] # premise
         data_df["sent2"] += [datum["sentence2"]] # hypothesis
 
-    data_df = pd.DataFrame(data_df).iloc[:3]
+    data_df = pd.DataFrame(data_df)
     print(data_df.shape)
     data_df.head()
 
@@ -85,7 +85,8 @@ if __name__ == "__main__":
 
     tqdm.pandas()
     # to see progress during operation: progress_apply instead of apply
-    results_custom = data_df.apply(df_predict, axis=1, model_nli=model_nli, tokenizer=custom_tokenizer, is_custom=True, **tokenizer_args_custom)
+    # results_custom = data_df.apply(df_predict, axis=1, model_nli=model_nli, tokenizer=custom_tokenizer, is_custom=True, **tokenizer_args_custom)
+    # results_custom.to_json("results_custom_tokenizer.json")
 
-    results_custom
-    # results_normal = data_df.apply(df_predict, axis=1, model_nli=model_nli, tokenizer=tokenizer_nli, is_custom=False, **tokenizer_args_normal)
+    results_normal = data_df.apply(df_predict, axis=1, model_nli=model_nli, tokenizer=tokenizer_nli, is_custom=False, **tokenizer_args_normal)
+    results_normal.to_json("results_normal_tokenizer.json")
