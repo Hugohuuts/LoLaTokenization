@@ -58,10 +58,3 @@ def verb_tokenizer(premises_hypothesis, separator):
 
 def adjective_tokenizer(premises_hypothesis, separator):
    return pos_tokenizer(premises_hypothesis[0], ['ADJ'], separator), pos_tokenizer(premises_hypothesis[1], ['ADJ'], separator)  
-
-
-premises_hypothesis = ("The cat is large. An ant is small.", "The cat is bigger than the ant.")
-print(noun_tokenizer(premises_hypothesis, "#"))
-print(verb_tokenizer(premises_hypothesis, "#"))
-print(adjective_tokenizer(premises_hypothesis, "#"))
-

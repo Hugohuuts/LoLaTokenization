@@ -5,6 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 from prediction_utilities import get_prediction
 from example_tokenization import custom_tokenization
+from tokenizers_pos import noun_tokenizer
 from custom_tokenizer_abstract import CustomTokenizerGeneral
 from custom_models import load_custom_class
 from argparse import ArgumentParser
@@ -27,7 +28,7 @@ if __name__ == "__main__":
     # BERT
     # custom_tokenizer = CustomTokenizerGeneral(tokenizer_nli, custom_tokenization, separator_marker="##", special_space_token="")
     # RoBERTa
-    custom_tokenizer = CustomTokenizerGeneral(tokenizer_nli, custom_tokenization, separator_marker="", special_space_token="Ġ")
+    custom_tokenizer = CustomTokenizerGeneral(tokenizer_nli, noun_tokenizer, separator_marker="", special_space_token="Ġ")
 
     import json
     import pandas as pd
@@ -70,7 +71,7 @@ if __name__ == "__main__":
         data_df["sent1"] += [datum["sentence1"]] # premise
         data_df["sent2"] += [datum["sentence2"]] # hypothesis
 
-    data_df = pd.DataFrame(data_df).iloc[:3]
+    data_df = pd.DataFrame(data_df).iloc[:]
     print(data_df.shape)
     data_df.head()
 
@@ -87,5 +88,5 @@ if __name__ == "__main__":
     # to see progress during operation: progress_apply instead of apply
     results_custom = data_df.apply(df_predict, axis=1, model_nli=model_nli, tokenizer=custom_tokenizer, is_custom=True, **tokenizer_args_custom)
 
-    results_custom
+    results_custom.to_json('results_custom_tokenizer.json')
     # results_normal = data_df.apply(df_predict, axis=1, model_nli=model_nli, tokenizer=tokenizer_nli, is_custom=False, **tokenizer_args_normal)
