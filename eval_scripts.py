@@ -5,7 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 from prediction_utilities import get_prediction
 from example_tokenization import custom_tokenization
-from tokenizers_pos import noun_tokenizer
+from tokenizers_pos import noun_tokenizer, verb_tokenizer, adjective_tokenizer
 from custom_tokenizer_abstract import CustomTokenizerGeneral
 from custom_models import load_custom_class
 from argparse import ArgumentParser
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     # BERT
     # custom_tokenizer = CustomTokenizerGeneral(tokenizer_nli, custom_tokenization, separator_marker="##", special_space_token="")
     # RoBERTa
-    custom_tokenizer = CustomTokenizerGeneral(tokenizer_nli, noun_tokenizer, separator_marker="", special_space_token="Ġ")
+    custom_tokenizer = CustomTokenizerGeneral(tokenizer_nli, adjective_tokenizer, separator_marker="", special_space_token="Ġ")
 
     import json
     import pandas as pd
