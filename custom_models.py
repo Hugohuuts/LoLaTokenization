@@ -37,20 +37,6 @@ class CustomRoberta(CustomModelAbstract):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
-
-        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
-
-        outputs = self.model.roberta(
-            input_ids,
-            attention_mask=attention_mask,
-            token_type_ids=token_type_ids,
-            position_ids=position_ids,
-            head_mask=head_mask,
-            inputs_embeds=inputs_embeds,
-            output_attentions=output_attentions,
-            output_hidden_states=output_hidden_states,
-            return_dict=return_dict,
-        )
         sequence_output = outputs[0]
         logits = self.model.classifier(sequence_output)
 
