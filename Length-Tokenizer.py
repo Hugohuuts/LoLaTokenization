@@ -1,11 +1,13 @@
-def custom_tokenization(premise_hypothesis: Union[Tuple[str, str], List[str]], separator_marker: str="", **tokenization_args) -> Tuple[List[str], List[str]]:
+def custom_tokenization_word_length(premise_hypothesis: Union[Tuple[str, str], List[str]], separator_marker: str="", **tokenization_args) -> Tuple[List[str], List[str]]:
     """
     Custom tokenization method that returns separate tokens for premise and hypothesis.
+    Compatible with CustomTokenizerGeneral class.
 
     Args:
         premise_hypothesis: Tuple or list containing (premise, hypothesis)
         separator_marker: Special character(s) used by tokenizers when splitting words
-        tokenization_args: Additional tokenization arguments
+        tokenization_args: Additional tokenization arguments including:
+            - lengths: List of n-gram lengths to use (default: [1, 2, 3])
 
     Returns:
         Tuple containing (premise_tokens, hypothesis_tokens)
@@ -21,7 +23,10 @@ def custom_tokenization(premise_hypothesis: Union[Tuple[str, str], List[str]], s
                 continue
             # Loop through the words to create n-grams
             for i in range(len(words) - length + 1):
+                # Add a space before each token except at the start of sentences
                 token = ' '.join(words[i:i + length])
+                if i > 0:  # Add space prefix for non-first tokens
+                    token = ' ' + token
                 tokens.append(token)
 
         return tokens
