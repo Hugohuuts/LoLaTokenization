@@ -56,7 +56,8 @@ def get_morphological_components(word):
         # Return the morphemes as a list
         morphemes = row.iloc[0]['MorphoLexSegm']
         # Convert the morphemes to a string in the correct format
-        return strip_entry(morphemes)
+        tokenized = strip_entry(morphemes)
+        return tokenized
     else:
         # If the word is unknown, return it in full
         return word
@@ -90,3 +91,5 @@ def verb_tokenizer(premises_hypothesis, separator):
 
 def adjective_tokenizer(premises_hypothesis, separator):
    return pos_tokenizer(premises_hypothesis[0], ['ADJ'], separator), pos_tokenizer(premises_hypothesis[1], ['ADJ'], separator)  
+
+get_morphological_components("zoological")
