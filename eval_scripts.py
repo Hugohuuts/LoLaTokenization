@@ -30,7 +30,7 @@ if __name__ == "__main__":
     # BERT
     #custom_tokenizer = CustomTokenizerGeneral(tokenizer_nli, custom_tokenization_word_length, separator_marker="##", special_space_token="")
     # RoBERTa
-    custom_tokenizer = CustomTokenizerGeneral(tokenizer_nli, greedy_longest_tokenization, separator_marker="", special_space_token="Ġ")
+    custom_tokenizer = CustomTokenizerGeneral(tokenizer_nli, unigram_tokenizer, separator_marker="", special_space_token="Ġ")
 
     import json
     import pandas as pd
@@ -90,5 +90,5 @@ if __name__ == "__main__":
     # to see progress during operation: progress_apply instead of apply
     results_custom_tokenizer = data_df.apply(df_predict, axis=1, model_nli=model_nli, tokenizer=custom_tokenizer, is_custom=True, **tokenizer_args_custom)
 
-    results_custom_tokenizer.to_json('longest_results_snli.json')
+    results_custom_tokenizer.to_json('unigram_results_mnli.json')
     # results_normal = data_df.apply(df_predict, axis=1, model_nli=model_nli, tokenizer=tokenizer_nli, is_custom=False, **tokenizer_args_normal)
