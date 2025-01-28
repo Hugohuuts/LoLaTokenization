@@ -9,7 +9,8 @@ from tokenizers_pos import noun_tokenizer, verb_tokenizer, adjective_tokenizer
 from custom_tokenizer_abstract import CustomTokenizerGeneral
 from custom_models import load_custom_class
 from argparse import ArgumentParser
-
+from length_tokenizer import custom_tokenization_word_length, unigram_tokenizer, bigram_tokenizer, trigram_tokenizer
+from greedy_tokenizer import greedy_prefix_tokenization, greedy_suffix_tokenization, greedy_longest_tokenization
 if __name__ == "__main__":
     # sub class from modelling_bert "RobertaForSequenceClassification" and override the forward method
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -26,9 +27,9 @@ if __name__ == "__main__":
     vocabulary_id2tok = {tok_id:tok for tok, tok_id in tokenizer_nli.vocab.items()}
 
     # BERT
-    # custom_tokenizer = CustomTokenizerGeneral(tokenizer_nli, custom_tokenization, separator_marker="##", special_space_token="")
+    #custom_tokenizer = CustomTokenizerGeneral(tokenizer_nli, custom_tokenization_word_length, separator_marker="##", special_space_token="")
     # RoBERTa
-    custom_tokenizer = CustomTokenizerGeneral(tokenizer_nli, adjective_tokenizer, separator_marker="", special_space_token="Ġ")
+    custom_tokenizer = CustomTokenizerGeneral(tokenizer_nli, unigram_tokenizer, separator_marker="", special_space_token="Ġ")
 
     import json
     import pandas as pd
@@ -81,12 +82,12 @@ if __name__ == "__main__":
         else:
             input = row["sent1"] + " " + row["sent2"]
         prediction = get_prediction(input, model_nli, tokenizer, **tokenizer_args)
-        
+
         return prediction["label"], prediction["prob"]
 
     tqdm.pandas()
     # to see progress during operation: progress_apply instead of apply
-    results_custom = data_df.apply(df_predict, axis=1, model_nli=model_nli, tokenizer=custom_tokenizer, is_custom=True, **tokenizer_args_custom)
+    results_custom_tokenizer = data_df.apply(df_predict, axis=1, model_nli=model_nli, tokenizer=custom_tokenizer, is_custom=True, **tokenizer_args_custom)
 
-    results_custom.to_json('results_custom_tokenizer.json')
+    results_custom_tokenizer.to_json('unigram_results_snli.json')
     # results_normal = data_df.apply(df_predict, axis=1, model_nli=model_nli, tokenizer=tokenizer_nli, is_custom=False, **tokenizer_args_normal)
