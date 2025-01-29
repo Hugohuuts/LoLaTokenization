@@ -32,6 +32,8 @@ def calculate_accuracy_from_json(json_file_path):
     ]
 
     true_labels = None
+    test_file_paths = [r'C:\Users\ymede\Desktop\test\LoLaTokenization\snli_1.0_test.jsonl']
+    #test_file_paths = [r'C:\Users\ymede\Desktop\test\LoLaTokenization\multinli_1.0_dev_mismatched.jsonl']
     for path in test_file_paths:
         try:
             true_labels = pd.read_json(path, lines=True)['gold_label']
@@ -45,16 +47,18 @@ def calculate_accuracy_from_json(json_file_path):
         return None
 
     # Calculate accuracy
-    correct = (results == true_labels).sum()
+    predictions = results.iloc[0]
+    correct = sum([x == y for x, y in zip(list(predictions), list(true_labels))])
+    #correct = (results == true_labels).sum()
     total = len(true_labels)
     accuracy = correct / total
 
     print(f"Total samples: {total}")
     print(f"Correct predictions: {correct}")
-    print(f"Accuracy: {accuracy:.4f}")
+    print(f"Accuracy: {accuracy}")
 
     return accuracy
 
 # Usage example:
 if __name__ == "__main__":
-    accuracy = calculate_accuracy_from_json('longest_results_snli.json')
+    accuracy = calculate_accuracy_from_json(r"C:\Users\ymede\Desktop\test\LoLaTokenization\custom_results_snli.json")
