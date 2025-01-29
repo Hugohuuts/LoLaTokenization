@@ -1,19 +1,13 @@
 import re
-import pandas as pd
 import spacy
 NLP = spacy.load("en_core_web_sm")
 
 
-# Load the MorphoLex excel file
-file_path = "MorphoLEX_en.xlsx"  # Replace with your actual file path
-sheets = pd.read_excel(file_path, sheet_name=None)
+import polars as pl
 
-# The first sheet contains information about the dataset, which is not needed
-sheet_names = list(sheets.keys())[1:]
-filtered_sheets = {name: sheets[name] for name in sheet_names}
-
-# Combine the remaining sheets into a single DataFrame
-data = pd.concat(filtered_sheets.values(), ignore_index=True)
+# Read Excel file directly into a Polars DataFrame
+dfs  = pl.read_excel("MorphoLEX_en.xlsx", sheet_id=range(2,30), columns=["Word", "MorphoLexSegm"])
+df = pl.concat(dfs.values())
 
 def strip_entry(entry):
     """
@@ -37,9 +31,9 @@ def strip_entry(entry):
     # Flatten the matches and filter out empty components
     components = [match[0] or match[1] for match in matches]
     
-    return " ".join(components)
+    return components
 
-def get_morphological_components(word):
+def get_morphological_components(word, separator):
     """
     Splits a word into its morphological components.
     ---
@@ -50,19 +44,19 @@ def get_morphological_components(word):
         A string of the tokenized word.
     """
     # Search for the word in the combined DataFrame
-    row = data[data['Word'].str.lower() == word.lower()]
-    
-    if not row.empty:
+    filtered = df.filter(df["Word"] == word)
+    item = filtered["MorphoLexSegm"].first() if not filtered.is_empty() else None
+    if item:
         # Return the morphemes as a list
-        morphemes = row.iloc[0]['MorphoLexSegm']
         # Convert the morphemes to a string in the correct format
-        tokenized = strip_entry(morphemes)
+        tokenized = strip_entry(item)
+        tokenized = f' {separator}'.join(tokenized).split()
         return tokenized
     else:
         # If the word is unknown, return it in full
-        return word
+        return [word]
 
-def pos_tokenizer(sentence, tags, separator):
+def pos_tokenizer(sentence, tags, separator, special_marker):
     """
     Custom tokenizer that only tokenizes words that possess a specific POS tag
     ---
@@ -76,12 +70,12 @@ def pos_tokenizer(sentence, tags, separator):
     tokenized = []
     for token in NLP(sentence):
       if token.pos_ in tags:
-         tokenized.append(f"{separator}{get_morphological_components(token.text)}")
-      elif token.pos_ == "PUNCT":
-        tokenized.append(token.text)
+         split = get_morphological_components(token.text, separator)
+         split[0] = f"{special_marker}{split[0]}"
+         tokenized.extend(split)
       else:
-        tokenized.append(f"{separator}{token.text}")
-    return ' '.join(tokenized)
+        tokenized.append(f"{special_marker}{token.text}")
+    return tokenized
 
 def noun_tokenizer(premises_hypothesis, separator, space_marker):
    return pos_tokenizer(premises_hypothesis[0], ['NOUN', 'PROPN'], separator, space_marker), pos_tokenizer(premises_hypothesis[1], ['NOUN', 'PROPN'], separator, space_marker),
@@ -92,4 +86,7 @@ def verb_tokenizer(premises_hypothesis, separator, space_marker):
 def adjective_tokenizer(premises_hypothesis, separator, space_marker):
    return pos_tokenizer(premises_hypothesis[0], ['ADJ'], separator, space_marker), pos_tokenizer(premises_hypothesis[1], ['ADJ'], separator, space_marker)  
 
-get_morphological_components("zoological")
+#print(noun_tokenizer(["this contains categories and phrases aswell","mistakes intricaties overcompensation"], '#', '$'))
+
+#print(get_morphological_components('zoological', '#'))
+#print(get_morphological_components('jhchdjjdj', '#'))
