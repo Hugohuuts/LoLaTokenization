@@ -20,12 +20,40 @@ class CustomModelAbstract(PreTrainedModel, ABC):
     def forward(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None):
         pass
 
+class CustomModelGeneric(CustomModelAbstract):
+    def forward(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None):
+        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+        outputs = self.model(
+            input_ids,
+            attention_mask=attention_mask,
+            token_type_ids=token_type_ids,
+            position_ids=position_ids,
+            head_mask=head_mask,
+            inputs_embeds=inputs_embeds,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict,
+        )
+        sequence_output = outputs[0]
+        logits = self.model.classifier(sequence_output)
+
+        loss = None
+        if not return_dict:
+            output = (logits,) + outputs[2:]
+            return ((loss,) + output) if loss is not None else output
+
+        return SequenceClassifierOutput(
+            loss=loss,
+            logits=logits,
+            hidden_states=outputs.hidden_states,
+            attentions=outputs.attentions,
+        )
+    
 class CustomRoberta(CustomModelAbstract):
     config_class = RobertaConfig
 
     def forward(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None):
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
-        # print(input_ids.shape, attention_mask.shape)
         outputs = self.model.roberta(
             input_ids,
             attention_mask=attention_mask,
@@ -104,10 +132,12 @@ def load_custom_class(model_name_or_repo_link: str, device: torch.device=None, *
     if not device:
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    if "roberta" in model_name_or_repo_link.lower():
+    if "roberta" in model_name_or_repo_link.lower() or "minilm" in model_name_or_repo_link.lower():
         class_type = CustomRoberta
     elif "bert" in model_name_or_repo_link.lower() and "roberta" not in model_name_or_repo_link.lower():
         class_type = CustomBert
+    else:
+        class_type = CustomModelGeneric
     
     assert class_type != None, "Could not find a class with that name."
 

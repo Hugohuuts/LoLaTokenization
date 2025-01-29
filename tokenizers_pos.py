@@ -83,13 +83,13 @@ def pos_tokenizer(sentence, tags, separator):
         tokenized.append(f"{separator}{token.text}")
     return ' '.join(tokenized)
 
-def noun_tokenizer(premises_hypothesis, separator):
-   return pos_tokenizer(premises_hypothesis[0], ['NOUN', 'PROPN'], separator), pos_tokenizer(premises_hypothesis[1], ['NOUN', 'PROPN'], separator),
+def noun_tokenizer(premises_hypothesis, separator, space_marker):
+   return pos_tokenizer(premises_hypothesis[0], ['NOUN', 'PROPN'], separator, space_marker), pos_tokenizer(premises_hypothesis[1], ['NOUN', 'PROPN'], separator, space_marker),
 
-def verb_tokenizer(premises_hypothesis, separator):
-   return pos_tokenizer(premises_hypothesis[0], ['VERB'], separator), pos_tokenizer(premises_hypothesis[1], ['VERB'], separator)
+def verb_tokenizer(premises_hypothesis, separator, space_marker):
+   return pos_tokenizer(premises_hypothesis[0], ['VERB'], separator, space_marker), pos_tokenizer(premises_hypothesis[1], ['VERB'], separator, space_marker)
 
-def adjective_tokenizer(premises_hypothesis, separator):
-   return pos_tokenizer(premises_hypothesis[0], ['ADJ'], separator), pos_tokenizer(premises_hypothesis[1], ['ADJ'], separator)  
+def adjective_tokenizer(premises_hypothesis, separator, space_marker):
+   return pos_tokenizer(premises_hypothesis[0], ['ADJ'], separator, space_marker), pos_tokenizer(premises_hypothesis[1], ['ADJ'], separator, space_marker)  
 
 get_morphological_components("zoological")

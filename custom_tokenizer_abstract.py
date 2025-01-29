@@ -6,14 +6,14 @@ class MissingTokenizationFunctionError(Exception):
     pass
 
 class CustomTokenizerGeneral:
-    def __init__(self, tokenizer: AutoTokenizer, tokenization_func: callable=None, separator_marker: str="##", device: torch.device=None, special_space_token: str="Ġ"):
+    def __init__(self, tokenizer: AutoTokenizer, tokenization_func: callable=None, separator: str="##", device: torch.device=None, special_space_token: str="Ġ"):
         """
         Template class for calling a custom tokenization method.
         ---
         Args:
             tokenizer: any pre-trained tokenizer.
             tokenization_func: a custom tokenization method that **must** return a tuple or list of the tokenized premises and hypothesis respectively.
-            separator_marker: special character(s) use by tokenizers when splitting words (e.g., `##` for BERT).
+            separator: special character(s) use by tokenizers when splitting words (e.g., `##` for BERT).
             device: on which device to move the tensors; if not given, automatically detects the best option.
             special_space_token: character used as replacement for leading spaces of tokens; RoBERTa uses `Ġ` instead of spaces while BERT does not consider spaces (so ``).
         """
@@ -21,13 +21,14 @@ class CustomTokenizerGeneral:
         self.original_tokenizer = tokenizer
         self.special_space_token = special_space_token
         self.valid_tokens = set(self.vocabulary.keys())
-        self.original_tokenizer_name = tokenizer.name_or_path
+        self.special_tokens_set = set(tokenizer.special_tokens_map.values())
+        self.original_tokenizer_name = tokenizer.name_or_path.lower()
         self.vocabulary_id2tok = {tok_id:tok for tok, tok_id in self.vocabulary.items()}
 
         self._load_special_tokens(self.original_tokenizer_name, tokenizer)
 
         self.tokenization_func = tokenization_func
-        self.separator_marker = separator_marker
+        self.separator = separator
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") if not device else device
         print(f"Tensors and operations will be done on {self.device}.")
 
@@ -39,17 +40,17 @@ class CustomTokenizerGeneral:
             tokenizer_name: name of the given pre-trained tokenizer.
             tokenizer: any pre-trained tokenizer.
         """
-        if "roberta" in tokenizer_name:
+        if "bert" in tokenizer_name and "roberta" not in tokenizer_name:
+            self.unk_token_id, self.unk_token = self.vocabulary[tokenizer.unk_token], tokenizer.unk_token
+            self.sep_token_id, self.sep_token = self.vocabulary[tokenizer.sep_token], tokenizer.sep_token
+            self.pad_token_id, self.pad_token = self.vocabulary[tokenizer.pad_token], tokenizer.pad_token
+            self.class_token_id, self.class_token = self.vocabulary[tokenizer.cls_token], tokenizer.cls_token
+        else:
             self.unk_token_id, self.unk_token = self.vocabulary[tokenizer.unk_token], tokenizer.unk_token
             self.sep_token_id, self.sep_token = self.vocabulary[tokenizer.sep_token], tokenizer.sep_token
             self.pad_token_id, self.pad_token = self.vocabulary[tokenizer.pad_token], tokenizer.pad_token
             self.bos_token_id, self.bos_token = self.vocabulary[tokenizer.bos_token], tokenizer.bos_token
             self.eos_token_id, self.eos_token = self.vocabulary[tokenizer.eos_token], tokenizer.eos_token
-        elif "bert" in tokenizer_name and "roberta" not in tokenizer_name:
-            self.unk_token_id, self.unk_token = self.vocabulary[tokenizer.unk_token], tokenizer.unk_token
-            self.sep_token_id, self.sep_token = self.vocabulary[tokenizer.sep_token], tokenizer.sep_token
-            self.pad_token_id, self.pad_token = self.vocabulary[tokenizer.pad_token], tokenizer.pad_token
-            self.class_token_id, self.class_token = self.vocabulary[tokenizer.cls_token], tokenizer.cls_token
 
     def replace_prefix_space_with_special(self, token_list: list[str]) -> list[str]:
         """
@@ -79,12 +80,13 @@ class CustomTokenizerGeneral:
             return_token = self.vocabulary[token]
         else:
             aux_token = token
+            # print(token, self.special_space_token)
             if self.special_space_token != " " and token[0] == self.special_space_token:
                 aux_token = token.replace(self.special_space_token, " ") # original tokenizer only accepts ' ' and not the special character, as is leads to buggy outputs
 
             original_tok_split = self.original_tokenizer.encode(aux_token)[1:-1] # remove the extra bos and eos tokens
             decoded_original_tok = [self.original_tokenizer.decode(original_tok) for original_tok in original_tok_split]
-            warnings.warn(f"\033[31mWarning: '{token}' was not found in the original tokenizer's vocabulary; '{token}' will be split into '{decoded_original_tok}' using the original tokenizer.\033[0m", stacklevel=2)
+            # warnings.warn(f"\033[31mWarning: '{token}' was not found in the original tokenizer's vocabulary; '{token}' will be split into '{decoded_original_tok}' using the original tokenizer.\033[0m", stacklevel=2)
             return_token = original_tok_split 
 
         if isinstance(return_token, int):
@@ -105,6 +107,25 @@ class CustomTokenizerGeneral:
             aux_token_list += self.get_token_id(token)
 
         return aux_token_list
+
+    def get_offset_mapping(self, token_list):
+        running_length = 0
+        spans = []
+        for tok in token_list:
+            start_idx = running_length
+            end_idx = running_length + len(tok)
+            if tok in self.special_tokens_set:
+                spans += [(0,0)]
+                continue
+            if tok[0] == self.special_space_token:
+                start_idx += 1
+            spans += [(start_idx, end_idx)]
+            running_length = end_idx
+
+        return spans
+    
+    def get_attention_mask(self, token_id_list):
+        return [int(token_id != self.pad_token_id) for token_id in token_id_list]
 
     def decode(self, token_list: list[int], remove_special_markings: bool=False) -> str:
         """
@@ -147,17 +168,30 @@ class CustomTokenizerGeneral:
         combined_list = None
         overflow_length = len(tok_list_1) + len(tok_list_2)
         # print(len(tok_list_1), len(tok_list_2), overflow_length)
-        if "roberta" in self.original_tokenizer_name:
+        if "roberta" in self.original_tokenizer_name or "minilm" in self.original_tokenizer_name:
+            num_markers = 4
+        elif "bert" in self.original_tokenizer_name and "roberta" not in self.original_tokenizer_name:
+            num_markers = 3
+
+        # print(overflow_length, len(tok_list_1), len(tok_list_2))
+        if (overflow_length + num_markers) - 512 > 0:
             # max_length < 514 (bcs of end and start)
             # 516 = 512 + 2 (bos, eos) + 2 (separators between inputs)
-            overflow_length = overflow_length if overflow_length - 508 <= 0 else overflow_length - 508
-
             # e.g. tokl1 = 10, tokl2 = 15 ==> total=25, max=17 (15+2) ==> overflow=8 ==>tokl2 = 15-8=7
-            combined_list = [self.bos_token] + tok_list_1[:len(tok_list_1) - overflow_length] + [self.eos_token] + [self.sep_token] + tok_list_2 + [self.eos_token]
-            # print(len(combined_list), overflow_length)
-        elif "bert" in self.original_tokenizer_name and "roberta" not in self.original_tokenizer_name:
-            overflow_length = overflow_length if overflow_length - 508 <= 0 else overflow_length - 508
-            combined_list = [self.class_token] + tok_list_1[:len(tok_list_1) - overflow_length] + [self.sep_token] + tok_list_2 + [self.sep_token]
+            # overflow_length = 11, tok_limit = 5 -> tok_list_1 = 6, tok_list_2 = 5
+            # overflow_length = 12, tok_limit = 6 -> tok_list_1 = 6, tok_list_2 = 6
+            #overflow_length = 13, tok_limit = 6 -> tok_list_1 = 7, tok_list_2 = 6
+            tok_limit_1 = 512 // 2 - 1
+            tok_limit_2 = 512 // 2 - 1 - (num_markers // 2)
+            tok_list_1 = tok_list_1[:tok_limit_1]
+            tok_list_2 = tok_list_2[:tok_limit_2]
+
+        if "bert" in self.original_tokenizer_name and "roberta" not in self.original_tokenizer_name:
+            combined_list = [self.class_token] + tok_list_1 + [self.sep_token] + tok_list_2 + [self.sep_token]
+        else:
+            combined_list = [self.bos_token] + tok_list_1 + [self.eos_token] + [self.sep_token] + tok_list_2 + [self.eos_token]
+
+        assert len(combined_list) <= 512, f"Too many tokens: {len(combined_list)}"
 
         return combined_list
 
@@ -184,23 +218,34 @@ class CustomTokenizerGeneral:
         if do_lowercase:
             premise_hypothesis = [text.lower() for text in premise_hypothesis]
 
-        tokens_premises, tokens_hypothesis = self.tokenization_func(premise_hypothesis, self.separator_marker, **tokenization_args)
+        tokens_premises, tokens_hypothesis = self.tokenization_func(premise_hypothesis, self.separator, self.special_space_token)
         tokens_premises, tokens_hypothesis = self.replace_prefix_space_with_special(tokens_premises), self.replace_prefix_space_with_special(tokens_hypothesis)
 
         tokens = self.combine_token_list(tokens_premises, tokens_hypothesis)
         input_ids = self.encode(tokens)
 
-        unk_tok_num = sum([token_id == self.unk_token_id for token_id in input_ids])
-        assert not(unk_tok_num > 0), f"There are unknown tokens in the text! {unk_tok_num} unknown tokens."
+        unk_tok_num = sum([token_id == self.unk_token_id for token_id in input_ids]) # not working always? some data simply is not available to models, e.g. ˨ˠ3 in mnli
+        # assert not(unk_tok_num > 0), f"There are unknown tokens in the text! {unk_tok_num} unknown tokens."
+        if unk_tok_num > 0:
+            warnings.warn(f"There are {unk_tok_num} unknown tokens!")
 
         attention_mask = [int(token_id != self.pad_token_id) for token_id in input_ids]
 
         # input_ids on cuda
         # attention mask on cuda
         output = {
-            "input_ids": torch.as_tensor([input_ids], device=self.device),
-            "attention_mask": torch.as_tensor([attention_mask], device=self.device) # always 1 except for padding tokens
+            "input_ids": input_ids,
+            "attention_mask": attention_mask # always 1 except for padding tokens
         }
+
+        if tokenization_args.pop("return_tensors", False) == "pt":
+            for key, val in output.items():
+                if not isinstance(val, torch.Tensor):
+                    aux_t = torch.as_tensor(val)
+                    if len(aux_t.shape) > 1:
+                        output[key] = aux_t
+                    else:
+                        output[key] = torch.as_tensor([val])
 
         return BatchEncoding(output)
 
@@ -209,11 +254,11 @@ if __name__ == "__main__":
     from example_tokenization import custom_tokenization
 
     repo_link_nli = "cross-encoder/nli-distilroberta-base"
-    separator_marker = ""
+    separator = ""
     special_space_token = "Ġ"
 
     # repo_link_nli = "sentence-transformers/nli-bert-base"
-    # separator_marker = "##"
+    # separator = "##"
     # special_space_token = ""
 
     tokenizer_nli = AutoTokenizer.from_pretrained(repo_link_nli)
@@ -224,7 +269,7 @@ if __name__ == "__main__":
     
     ### EXAMPLE
     print("Example tokenization")
-    custom_general_tokenizer = CustomTokenizerGeneral(tokenizer_nli, custom_tokenization, separator_marker=separator_marker, special_space_token=special_space_token)
+    custom_general_tokenizer = CustomTokenizerGeneral(tokenizer_nli, custom_tokenization, separator=separator, special_space_token=special_space_token)
     for problem in test_nli:
         toks = custom_general_tokenizer(problem)
         aux_list = toks["input_ids"][0].detach().cpu().numpy()

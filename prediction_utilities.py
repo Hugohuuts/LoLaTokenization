@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-def get_prediction(premise_hypothesis: tuple[str]|list[str], model_nli: callable, custom_tokenizer: callable, **tokenization_args) -> dict:
+def get_prediction(premise_hypothesis: tuple[str]|list[str], hypothesis: str=None, model_nli: callable=None, custom_tokenizer: callable=None, **tokenization_args) -> dict:
     """
     Wrapper method to obtain entailments labels given an input, a model, tokenizer, and optional tokenization arguments.
     ---
@@ -13,7 +13,11 @@ def get_prediction(premise_hypothesis: tuple[str]|list[str], model_nli: callable
     Returns:
         A dictionary containing the most likely entailment `label` of the input, its `prob`, and the softmax distribution over `all_probs` .
     """
-    tok_output = custom_tokenizer(premise_hypothesis, **tokenization_args)
+    if hypothesis:
+        tok_output = custom_tokenizer(premise_hypothesis, hypothesis, **tokenization_args)
+    else:
+        tok_output = custom_tokenizer(premise_hypothesis, **tokenization_args)
+
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # device = torch.device("cpu")
     tok_output.to(device)
