@@ -1,14 +1,14 @@
 tok_methods_pos=("adj" "char" "noun" "verb")
-tok_methods_length=("unigram_tokenizer")
+tok_methods_length=("unigram_tokenizer" "bigram_tokenizer")
 tok_methods_greedy=("greedy_prefix_tokenization" "greedy_suffix_tokenization" "greedy_longest_tokenization")
 
 data_set_paths=(
-    "data/multinli_1.0/multinli_1.0_dev_mismatched.jsonl"
+    "multinli_1.0_dev_mismatched.jsonl"
     # "data/snli_1.0/snli_1.0_test.jsonl"
 )
 
-methods_to_loop=$tok_methods_pos
-# methods_to_loop=$tok_methods_greedy
+#methods_to_loop=$tok_methods_pos
+#methods_to_loop=$tok_methods_greedy
 methods_to_loop=$tok_methods_length
 model=roberta
 for dataset in ${data_set_paths[@]}; do
@@ -22,5 +22,5 @@ for dataset in ${data_set_paths[@]}; do
     done
     wait
 
-#    python eval_scripts.py --path $dataset --model $model 
+#    python eval_scripts.py --path $dataset --model $model
 done

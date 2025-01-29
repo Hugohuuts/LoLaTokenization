@@ -3,6 +3,7 @@ from typing import List, Tuple, Union
 def greedy_prefix_tokenization(
     premise_hypothesis: Union[Tuple[str, str], List[str]],
     separator_marker: str = "",
+    special_space_token: str = " ",
     vocab: set = None,
     **tokenization_args
 ) -> Tuple[List[str], List[str]]:
@@ -12,9 +13,14 @@ def greedy_prefix_tokenization(
         tokens = []
         words = text.strip().split()
 
-        for word in words:
+        for i, word in enumerate(words):
             current_pos = 0
             word_tokens = []
+
+            # Handle space prefix for non-first words
+            if i > 0:
+                tokens.append(f"{special_space_token}{word[0]}")
+                current_pos = 1
 
             while current_pos < len(word):
                 best_token = word[current_pos:current_pos + min_length]
@@ -47,6 +53,7 @@ def greedy_prefix_tokenization(
 def greedy_suffix_tokenization(
     premise_hypothesis: Union[Tuple[str, str], List[str]],
     separator_marker: str = "",
+    special_space_token: str = " ",
     vocab: set = None,
     **tokenization_args
 ) -> Tuple[List[str], List[str]]:
@@ -94,6 +101,7 @@ def greedy_suffix_tokenization(
 def greedy_longest_tokenization(
     premise_hypothesis: Union[Tuple[str, str], List[str]],
     separator_marker: str = "",
+    special_space_token: str = " ",
     vocab: set = None,
     **tokenization_args
 ) -> Tuple[List[str], List[str]]:
@@ -106,6 +114,7 @@ def greedy_longest_tokenization(
     Args:
         premise_hypothesis: Tuple or list containing (premise, hypothesis)
         separator_marker: Special character(s) used between tokens
+        space_marker: Special character(s) used between words
         vocab: Set of known vocabulary words for validation
         tokenization_args: Additional tokenization arguments:
             - max_token_length: Maximum token length (default: 5)

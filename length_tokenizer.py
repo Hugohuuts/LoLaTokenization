@@ -88,12 +88,19 @@ def custom_char_tokenization(premise_hypothesis: Union[Tuple[str, str], List[str
     return premise_tokens, hypothesis_tokens
 
 
-def golden_chunk_tokenization(premise_hypothesis: Union[Tuple[str, str], List[str]], **tokenization_args) -> Tuple[List[str], List[str]]:
+def golden_chunk_tokenization(
+    premise_hypothesis: Union[Tuple[str, str], List[str]],
+    separator_marker: str="",
+    special_space_token: str = " ",
+    **tokenization_args
+) -> Tuple[List[str], List[str]]:
     """
     Golden-Chunk tokenization method that uses increasing chunk sizes based on the golden ratio.
 
     Args:
         premise_hypothesis: Tuple or list containing (premise, hypothesis)
+        separator_marker: Special character(s) used by tokenizers when splitting words
+        special_space_token: Special space token to use in the tokenization
         tokenization_args: Additional arguments including:
             - initial_length: Starting chunk size (default: 2)
             - ratio: Growth ratio (default: 1.618)
@@ -143,7 +150,17 @@ def golden_chunk_tokenization(premise_hypothesis: Union[Tuple[str, str], List[st
 
         return tokens
 
-def unigram_tokenizer(premise_hypothesis: Union[Tuple[str, str], List[str]], separator_marker: str="") -> Tuple[List[str], List[str]]:
+    # Tokenize both premise and hypothesis
+    premise_tokens = _golden_chunk_text(premise_hypothesis[0], **tokenization_args)
+    hypothesis_tokens = _golden_chunk_text(premise_hypothesis[1], **tokenization_args)
+
+    return premise_tokens, hypothesis_tokens
+
+def unigram_tokenizer(
+    premise_hypothesis: Union[Tuple[str, str], List[str]],
+    separator_marker: str="",
+    special_space_token: str = " "
+) -> Tuple[List[str], List[str]]:
     """
     Tokenizes text into unigrams (single words).
     """
@@ -160,7 +177,11 @@ def unigram_tokenizer(premise_hypothesis: Union[Tuple[str, str], List[str]], sep
 
     return premise_tokens, hypothesis_tokens
 
-def bigram_tokenizer(premise_hypothesis: Union[Tuple[str, str], List[str]], separator_marker: str="") -> Tuple[List[str], List[str]]:
+def bigram_tokenizer(
+    premise_hypothesis: Union[Tuple[str, str], List[str]],
+    separator_marker: str="",
+    special_space_token: str = " "
+) -> Tuple[List[str], List[str]]:
     """
     Tokenizes text into bigrams (pairs of words).
     """
@@ -168,9 +189,11 @@ def bigram_tokenizer(premise_hypothesis: Union[Tuple[str, str], List[str]], sepa
         words = text.split()
         tokens = []
         for i in range(len(words) - 1):
-            # Don't add space prefix - let CustomTokenizerGeneral handle it
-            tokens.append(words[i])
-            tokens.append(words[i + 1])
+            if i == 0:
+                tokens.append(words[i])
+            else:
+                tokens.append(f"{special_space_token}{words[i]}")
+            tokens.append(f"{special_space_token}{words[i + 1]}")
         return tokens
 
     premise_tokens = _tokenize_bigrams(premise_hypothesis[0])
@@ -178,7 +201,11 @@ def bigram_tokenizer(premise_hypothesis: Union[Tuple[str, str], List[str]], sepa
 
     return premise_tokens, hypothesis_tokens
 
-def trigram_tokenizer(premise_hypothesis: Union[Tuple[str, str], List[str]], separator_marker: str="") -> Tuple[List[str], List[str]]:
+def trigram_tokenizer(
+    premise_hypothesis: Union[Tuple[str, str], List[str]],
+    separator_marker: str="",
+    special_space_token: str = " "
+) -> Tuple[List[str], List[str]]:
     """
     Tokenizes text into trigrams (triplets of words).
     """
@@ -186,10 +213,12 @@ def trigram_tokenizer(premise_hypothesis: Union[Tuple[str, str], List[str]], sep
         words = text.split()
         tokens = []
         for i in range(len(words) - 2):
-            # Don't add space prefix - let CustomTokenizerGeneral handle it
-            tokens.append(words[i])
-            tokens.append(words[i + 1])
-            tokens.append(words[i + 2])
+            if i == 0:
+                tokens.append(words[i])
+            else:
+                tokens.append(f"{special_space_token}{words[i]}")
+            tokens.append(f"{special_space_token}{words[i + 1]}")
+            tokens.append(f"{special_space_token}{words[i + 2]}")
         return tokens
 
     premise_tokens = _tokenize_trigrams(premise_hypothesis[0])
