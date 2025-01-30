@@ -143,7 +143,7 @@ def golden_chunk_tokenization(premise_hypothesis: Union[Tuple[str, str], List[st
 
         return tokens
 
-def unigram_tokenizer(premise_hypothesis: Union[Tuple[str, str], List[str]], separator_marker: str="") -> Tuple[List[str], List[str]]:
+def unigram_tokenizer(premise_hypothesis: Union[Tuple[str, str], List[str]], separator_marker: str="", special_space_token: str="") -> Tuple[List[str], List[str]]:
     """
     Tokenizes text into unigrams (single words).
     """
@@ -151,7 +151,6 @@ def unigram_tokenizer(premise_hypothesis: Union[Tuple[str, str], List[str]], sep
         words = text.split()
         tokens = []
         for i, word in enumerate(words):
-            # Don't add space prefix - let CustomTokenizerGeneral handle it
             tokens.append(word)
         return tokens
 
@@ -160,7 +159,7 @@ def unigram_tokenizer(premise_hypothesis: Union[Tuple[str, str], List[str]], sep
 
     return premise_tokens, hypothesis_tokens
 
-def bigram_tokenizer(premise_hypothesis: Union[Tuple[str, str], List[str]], separator_marker: str="") -> Tuple[List[str], List[str]]:
+def bigram_tokenizer(premise_hypothesis: Union[Tuple[str, str], List[str]], separator_marker: str="", special_space_token: str="") -> Tuple[List[str], List[str]]:
     """
     Tokenizes text into bigrams (pairs of words).
     """
@@ -168,7 +167,6 @@ def bigram_tokenizer(premise_hypothesis: Union[Tuple[str, str], List[str]], sepa
         words = text.split()
         tokens = []
         for i in range(len(words) - 1):
-            # Don't add space prefix - let CustomTokenizerGeneral handle it
             tokens.append(words[i])
             tokens.append(words[i + 1])
         return tokens

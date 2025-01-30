@@ -10,7 +10,7 @@ from tokenizers_pos import noun_tokenizer, verb_tokenizer, adjective_tokenizer
 from custom_tokenizer_abstract import CustomTokenizerGeneral
 from custom_models import load_custom_class
 from argparse import ArgumentParser
-from length_tokenizer import custom_tokenization_word_length, unigram_tokenizer, bigram_tokenizer, trigram_tokenizer
+from length_tokenizer import custom_tokenization_word_length, unigram_tokenizer, bigram_tokenizer
 from greedy_tokenizer import greedy_prefix_tokenization, greedy_suffix_tokenization, greedy_longest_tokenization
 
 TOK_METHOD_MAP = {
@@ -21,7 +21,6 @@ TOK_METHOD_MAP = {
     "custom_tokenization_word_length":custom_tokenization_word_length,
     "unigram_tokenizer":unigram_tokenizer,
     "bigram_tokenizer":bigram_tokenizer,
-    "trigram_tokenizer":trigram_tokenizer,
     "greedy_prefix_tokenization": greedy_prefix_tokenization,
     "greedy_suffix_tokenization": greedy_suffix_tokenization,
     "greedy_longest_tokenization": greedy_longest_tokenization,
@@ -51,7 +50,7 @@ def predict(premise, hypothesis, model_nli, tokenizer, is_custom=True, **tokeniz
     else:
         input = premise + " " + hypothesis
     prediction = get_prediction(premise_hypothesis=input, model_nli=model_nli, custom_tokenizer=tokenizer, **tokenizer_args)
-    
+
     return {"label": prediction["label"], "prob": prediction["prob"], "all_prob": prediction["all_probs"]}
 
 def predict_loop(data, model_nli, tokenizer, is_custom=True, **tokenizer_args):
@@ -125,5 +124,5 @@ if __name__ == "__main__":
 
     os.makedirs(f"results/{args.model}/", exist_ok=True)
     file_name = f"results/{args.model}/{data_path.split('/')[-1][:-6]}-{args.tok_method if args.tok_method else 'standard'}-{args.model}.jsonl"
-    
+
     save_results(results, file_name)
