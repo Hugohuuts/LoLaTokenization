@@ -22,12 +22,14 @@ def get_prediction(premise_hypothesis: tuple[str]|list[str], hypothesis: str=Non
     # device = torch.device("cpu")
     tok_output.to(device)
     # print(tok_output, tok_output["input_ids"].shape, tok_output["attention_mask"].shape)
-    model_outputs = model_nli(**tok_output)
+    with torch.no_grad():
+        model_outputs = model_nli(**tok_output)
     probs = torch.softmax(model_outputs.logits, dim=1).tolist()[0]
     output = {
         "label": model_nli.config.id2label[np.argmax(probs)],
         "prob": np.max(probs),
         "all_probs": {model_nli.config.id2label[prob_idx]: prob_aux for prob_idx, prob_aux in zip(np.argsort(probs)[::-1], np.sort(probs)[::-1])}
     }
+    torch.cuda.empty_cache()
     
     return output

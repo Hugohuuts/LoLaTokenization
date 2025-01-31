@@ -6,7 +6,7 @@ class MissingTokenizationFunctionError(Exception):
     pass
 
 class CustomTokenizerGeneral:
-    def __init__(self, tokenizer: AutoTokenizer, tokenization_func: callable=None, separator: str="##", device: torch.device=None, special_space_token: str="Ġ"):
+    def __init__(self, tokenizer: AutoTokenizer, tokenization_func: callable=None, separator: str="##", device: torch.device=None, special_space_token: str="Ġ", max_length: int=512):
         """
         Template class for calling a custom tokenization method.
         ---
@@ -20,6 +20,7 @@ class CustomTokenizerGeneral:
         self.vocabulary = tokenizer.vocab
         self.original_tokenizer = tokenizer
         self.special_space_token = special_space_token
+        self.max_length = max_length
         self.valid_tokens = set(self.vocabulary.keys())
         self.special_tokens_set = set(tokenizer.special_tokens_map.values())
         self.original_tokenizer_name = tokenizer.name_or_path.lower()
@@ -172,17 +173,19 @@ class CustomTokenizerGeneral:
             num_markers = 4
         elif "bert" in self.original_tokenizer_name and "roberta" not in self.original_tokenizer_name:
             num_markers = 3
+        elif "bart" in self.original_tokenizer_name:
+            num_markers = 4
 
         # print(overflow_length, len(tok_list_1), len(tok_list_2))
-        if (overflow_length + num_markers) - 512 > 0:
+        if (overflow_length + num_markers) - self.max_length > 0:
             # max_length < 514 (bcs of end and start)
             # 516 = 512 + 2 (bos, eos) + 2 (separators between inputs)
             # e.g. tokl1 = 10, tokl2 = 15 ==> total=25, max=17 (15+2) ==> overflow=8 ==>tokl2 = 15-8=7
             # overflow_length = 11, tok_limit = 5 -> tok_list_1 = 6, tok_list_2 = 5
             # overflow_length = 12, tok_limit = 6 -> tok_list_1 = 6, tok_list_2 = 6
             #overflow_length = 13, tok_limit = 6 -> tok_list_1 = 7, tok_list_2 = 6
-            tok_limit_1 = 512 // 2 - 1
-            tok_limit_2 = 512 // 2 - 1 - (num_markers // 2)
+            tok_limit_1 = self.max_length // 2 - 1
+            tok_limit_2 = self.max_length // 2 - 1 - (num_markers // 2)
             tok_list_1 = tok_list_1[:tok_limit_1]
             tok_list_2 = tok_list_2[:tok_limit_2]
 
@@ -191,9 +194,13 @@ class CustomTokenizerGeneral:
         else:
             combined_list = [self.bos_token] + tok_list_1 + [self.eos_token] + [self.sep_token] + tok_list_2 + [self.eos_token]
 
-        assert len(combined_list) <= 512, f"Too many tokens: {len(combined_list)}"
+        assert len(combined_list) <= self.max_length, f"Too many tokens: {len(combined_list)}"
 
         return combined_list
+    
+    # remove any empty strings, if present
+    def sanity_check(self, tok_list):
+        return [tok for tok in tok_list if tok != ""]
 
     def __call__(self, premise_hypothesis: tuple[str]|list[str], **tokenization_args) -> dict:
         """
@@ -219,6 +226,7 @@ class CustomTokenizerGeneral:
             premise_hypothesis = [text.lower() for text in premise_hypothesis]
 
         tokens_premises, tokens_hypothesis = self.tokenization_func(premise_hypothesis, self.separator, self.special_space_token)
+        tokens_premises, tokens_hypothesis = self.sanity_check(tokens_premises), self.sanity_check(tokens_hypothesis)
         tokens_premises, tokens_hypothesis = self.replace_prefix_space_with_special(tokens_premises), self.replace_prefix_space_with_special(tokens_hypothesis)
 
         tokens = self.combine_token_list(tokens_premises, tokens_hypothesis)

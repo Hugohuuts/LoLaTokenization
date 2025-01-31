@@ -1,6 +1,6 @@
 import torch
 from abc import ABC, abstractmethod
-from transformers.modeling_outputs import SequenceClassifierOutput
+from transformers.modeling_outputs import SequenceClassifierOutput, Seq2SeqSequenceClassifierOutput
 from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer
 from transformers import RobertaConfig, BertConfig, PreTrainedModel
 
@@ -9,7 +9,7 @@ class CustomModelAbstract(PreTrainedModel, ABC):
     Abstract class serving as a template for custom models.
     """
     def __init__(self, model_name: str, **kwargs) -> None:
-        config = AutoConfig.from_pretrained(model_name, output_attentions=True, output_hidden_states=True)
+        config = AutoConfig.from_pretrained(model_name, output_attentions=True, output_hidden_states=True, num_labels=3)
         super().__init__(config)
         self._load_model(model_name)
 
@@ -19,6 +19,30 @@ class CustomModelAbstract(PreTrainedModel, ABC):
     @abstractmethod
     def forward(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None):
         pass
+
+class CustomModelBart(CustomModelAbstract):
+    def forward(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None):
+        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+        outputs = self.model(
+            input_ids,
+            attention_mask=attention_mask,
+            head_mask=head_mask,
+            inputs_embeds=inputs_embeds,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict,
+        )
+        logits = outputs.logits
+
+        loss = None
+        if not return_dict:
+            output = (logits,) + outputs[2:]
+            return ((loss,) + output) if loss is not None else output
+
+        return Seq2SeqSequenceClassifierOutput(
+            loss=loss,
+            **outputs
+        )
 
 class CustomModelGeneric(CustomModelAbstract):
     def forward(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None):
@@ -83,6 +107,13 @@ class CustomRoberta(CustomModelAbstract):
 class CustomBert(CustomModelAbstract):
     config_class = BertConfig
 
+    # done at the recommendation of the original authors: https://huggingface.co/sentence-transformers/nli-bert-base
+    def mean_pooling(self, model_output, attention_mask):
+        token_embeddings = model_output[0] #First element of model_output contains all token embeddings
+        input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+        return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+
+
     def forward(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None):
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
@@ -98,10 +129,13 @@ class CustomBert(CustomModelAbstract):
             return_dict=return_dict,
         )
 
-        pooled_output = outputs[1]
-
-        pooled_output = self.model.dropout(pooled_output)
+        embedding = self.mean_pooling(outputs, attention_mask)
+        pooled_output = self.model.dropout(embedding)
         logits = self.model.classifier(pooled_output)
+
+        # pooled_output = outputs[1]
+        # pooled_output = self.model.dropout(pooled_output)
+        # logits = self.model.classifier(pooled_output)
 
         loss = None
         if not return_dict:
@@ -115,7 +149,7 @@ class CustomBert(CustomModelAbstract):
             attentions=outputs.attentions,
         )
 
-def load_custom_class(model_name_or_repo_link: str, device: torch.device=None, **model_args) -> tuple[AutoTokenizer, CustomModelAbstract]:
+def load_custom_class(model_name_or_repo_link: str, device: torch.device=None, load_model=True, **model_args) -> tuple[AutoTokenizer, CustomModelAbstract]:
     """
     Wrapper method to automatically load (or download) a given custom model.
     ---
@@ -136,12 +170,18 @@ def load_custom_class(model_name_or_repo_link: str, device: torch.device=None, *
         class_type = CustomRoberta
     elif "bert" in model_name_or_repo_link.lower() and "roberta" not in model_name_or_repo_link.lower():
         class_type = CustomBert
+    elif "bart" in model_name_or_repo_link.lower():
+        class_type = CustomModelBart
     else:
         class_type = CustomModelGeneric
     
     assert class_type != None, "Could not find a class with that name."
 
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_repo_link)
-    model = class_type(model_name_or_repo_link, **model_args).to(device)
+    if load_model:
+        model = class_type(model_name_or_repo_link, **model_args).to(device)
+        return_items = tokenizer, model
+    else:
+        return_items = tokenizer
 
-    return tokenizer, model
+    return return_items
