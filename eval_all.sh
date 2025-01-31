@@ -4,6 +4,7 @@ tok_methods_greedy=("greedy_prefix_tokenization" "greedy_suffix_tokenization" "g
 
 data_set_paths=(
     "multinli_1.0_dev_mismatched.jsonl"
+    "multinli_1.0_dev_matched.jsonl"
     "snli_1.0_test.jsonl"
 )
 

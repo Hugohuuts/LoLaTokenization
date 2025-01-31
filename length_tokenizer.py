@@ -1,7 +1,7 @@
 from typing import List, Tuple, Union
 import math
 
-def custom_tokenization_word_length(premise_hypothesis: Union[Tuple[str, str], List[str]], separator_marker: str="", **tokenization_args) -> Tuple[List[str], List[str]]:
+def custom_tokenization_word_length(premise_hypothesis: Union[Tuple[str, str], List[str]], separator_marker: str="", special_space_token: str="", **tokenization_args) -> Tuple[List[str], List[str]]:
     """
     Custom tokenization method that returns separate tokens for premise and hypothesis.
     Compatible with CustomTokenizerGeneral class.
