@@ -1,48 +1,14 @@
 import torch
 import json
-import pandas as pd
 import os
 
 from tqdm import tqdm
 from prediction_utilities import get_prediction
-from example_tokenization import custom_tokenization
-from tokenizers_pos import noun_tokenizer, verb_tokenizer, adjective_tokenizer
 from custom_tokenizer_abstract import CustomTokenizerGeneral
 from custom_models import load_custom_class
 from argparse import ArgumentParser
-from length_tokenizer import custom_tokenization_word_length, unigram_tokenizer, bigram_tokenizer
-from greedy_tokenizer import greedy_prefix_tokenization, greedy_suffix_tokenization, greedy_longest_tokenization
+from  method_mapping import *
 
-TOK_METHOD_MAP = {
-    "verb": verb_tokenizer,
-    "noun": noun_tokenizer,
-    "adj": adjective_tokenizer,
-    "char": custom_tokenization,
-    "custom_tokenization_word_length":custom_tokenization_word_length,
-    "unigram_tokenizer":unigram_tokenizer,
-    "bigram_tokenizer":bigram_tokenizer,
-    "greedy_prefix_tokenization": greedy_prefix_tokenization,
-    "greedy_suffix_tokenization": greedy_suffix_tokenization,
-    "greedy_longest_tokenization": greedy_longest_tokenization,
-}
-
-MODEL_MAP = {
-    "roberta": {
-        "model_link": "cross-encoder/nli-distilroberta-base",
-        "separator_marker": "",
-        "special_space_token": "Ġ"
-    },
-    "bert": {
-        "model_link": "sentence-transformers/nli-bert-base",
-        "separator_marker": "##",
-        "special_space_token": ""
-    },
-    "minilm": {
-        "model_link": "cross-encoder/nli-MiniLM2-L6-H768",
-        "separator_marker": "",
-        "special_space_token": "Ġ"
-    }
-}
 
 def predict(premise, hypothesis, model_nli, tokenizer, is_custom=True, **tokenizer_args):
     if is_custom:
@@ -76,7 +42,7 @@ if __name__ == "__main__":
     arg_parser = ArgumentParser()
     arg_parser.add_argument("--path", type=str)
     arg_parser.add_argument("--tok_method", type=str, default="")
-    arg_parser.add_argument("--model", type=str, choices=["bert", "roberta", "minilm"])
+    arg_parser.add_argument("--model", type=str, choices=["bart", "roberta", "minilm"])
     arg_parser.add_argument("--do_custom", action="store_true")
     args = arg_parser.parse_args()
 
@@ -92,12 +58,9 @@ if __name__ == "__main__":
     tokenizer_nli, model_nli = load_custom_class(model_parameters["model_link"], device, **model_args)
     if do_custom:
         tokenization_func = TOK_METHOD_MAP[args.tok_method]
-        custom_tokenizer = CustomTokenizerGeneral(tokenizer_nli, tokenization_func, separator=model_parameters["separator_marker"], special_space_token=model_parameters["special_space_token"])
-        vocabulary_id2tok = {tok_id:tok for tok, tok_id in tokenizer_nli.vocab.items()}
+        custom_tokenizer = CustomTokenizerGeneral(tokenizer_nli, tokenization_func, separator=model_parameters["separator_marker"], special_space_token=model_parameters["special_space_token"], max_length=model_parameters["max_length"])
         tokenizer_nli = custom_tokenizer
 
-    # python eval_scripts.py --path "data/multinli_1.0/multinli_1.0_dev_mismatched.jsonl" --tok_method adj --model roberta --do_custom true
-    # python eval_scripts.py --path "data/snli_1.0/snli_1.0_test.jsonl" --tok_method adj --model roberta --do_custom true
     data = {
         "label": [],
         "sent1": [],
