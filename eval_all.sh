@@ -1,18 +1,28 @@
 tok_methods_pos=("adj" "char" "noun" "verb")
-tok_methods_length=("unigram_tokenizer" "bigram_tokenizer" "trigram_tokenizer")
+tok_methods_length=("unigram_tokenizer")
 tok_methods_greedy=("greedy_prefix_tokenization" "greedy_suffix_tokenization" "greedy_longest_tokenization")
+# tok_methods_adverserial=("adverserial_shuffle_letters" "adverserial_shuffle_tokens_one" "adverserial_shuffle_tokens_one_neighbour" "adverserial_pos_synonym_noun" "adverserial_pos_synonym_verb")
+tok_methods_adverserial=("adverserial_pos_synonym_noun" "adverserial_pos_synonym_verb")
 
 data_set_paths=(
-    "multinli_1.0_dev_mismatched.jsonl"
-    "multinli_1.0_dev_matched.jsonl"
-    "snli_1.0_test.jsonl"
+    "data/multinli_1.0/multinli_1.0_dev_mismatched.jsonl"
+    "data/multinli_1.0/multinli_1.0_dev_matched.jsonl"
+    "data/snli_1.0/snli_1.0_test.jsonl"
 )
+# or if locally
+# data_set_paths=(
+#     "multinli_1.0_dev_mismatched.jsonl"
+#     "multinli_1.0_dev_matched.jsonl"
+#     "snli_1.0_test.jsonl"
+# )
 
-methods_to_loop=${tok_methods_pos[@]}
+# methods_to_loop=${tok_methods_pos[@]}
 # methods_to_loop=${tok_methods_greedy[@]}
- #methods_to_loop=${tok_methods_length[@]}
-# models=("bert" "roberta" "minilm")
-models=("bart")
+# methods_to_loop=${tok_methods_length[@]}
+methods_to_loop=${tok_methods_adverserial[@]}
+
+models=("roberta" "minilm" "bart")
+# models=("minilm")
 for model in ${models[@]}; do
     maximum_threads=3
     if [ $model == "bart" ]; then # BART takes much more memory
@@ -29,6 +39,6 @@ for model in ${models[@]}; do
         done
         wait
 
-        python eval_scripts.py --path $dataset --model $model
+        # python eval_scripts.py --path $dataset --model $model
     done
 done

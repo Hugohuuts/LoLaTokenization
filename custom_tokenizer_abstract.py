@@ -259,7 +259,7 @@ class CustomTokenizerGeneral:
 
 #### example of how a new custom tokenization function can be applied
 if __name__ == "__main__":
-    from example_tokenization import custom_tokenization
+    from tokenization_methods.character_split import custom_tokenization
 
     repo_link_nli = "cross-encoder/nli-distilroberta-base"
     separator = ""

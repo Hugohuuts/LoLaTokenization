@@ -1,13 +1,14 @@
 import torch
 import json
 import os
+import numpy as np
 
 from tqdm import tqdm
 from prediction_utilities import get_prediction
 from custom_tokenizer_abstract import CustomTokenizerGeneral
 from custom_models import load_custom_class
 from argparse import ArgumentParser
-from  method_mapping import *
+from  tokenization_methods.method_mapping import *
 
 
 def predict(premise, hypothesis, model_nli, tokenizer, is_custom=True, **tokenizer_args):
@@ -38,6 +39,7 @@ def save_results(results, file_name):
             file.write("\n")
 
 if __name__ == "__main__":
+    np.random.seed(42) # for replicability
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     arg_parser = ArgumentParser()
     arg_parser.add_argument("--path", type=str)

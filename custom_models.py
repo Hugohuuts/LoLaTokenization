@@ -1,8 +1,20 @@
 import torch
 from abc import ABC, abstractmethod
-from transformers.modeling_outputs import SequenceClassifierOutput, Seq2SeqSequenceClassifierOutput
+from transformers.modeling_outputs import SequenceClassifierOutput, Seq2SeqSequenceClassifierOutput, ModelOutput
+from dataclasses import dataclass
+from typing import Optional, Tuple
+
 from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer
 from transformers import RobertaConfig, BertConfig, PreTrainedModel
+
+@dataclass
+class CustomSequenceClassifierOutput(ModelOutput):
+   
+    loss: Optional[torch.FloatTensor] = None
+    logits: torch.FloatTensor = None
+    hidden_states: Optional[Tuple[torch.FloatTensor, ...]] = None
+    last_hidden_state: Optional[torch.FloatTensor] = None
+    attentions: Optional[Tuple[torch.FloatTensor, ...]] = None
 
 class CustomModelAbstract(PreTrainedModel, ABC):
     """
@@ -66,10 +78,11 @@ class CustomModelGeneric(CustomModelAbstract):
             output = (logits,) + outputs[2:]
             return ((loss,) + output) if loss is not None else output
 
-        return SequenceClassifierOutput(
+        return CustomSequenceClassifierOutput(
             loss=loss,
             logits=logits,
             hidden_states=outputs.hidden_states,
+            last_hidden_state=outputs.last_hidden_state,
             attentions=outputs.attentions,
         )
     
@@ -97,10 +110,11 @@ class CustomRoberta(CustomModelAbstract):
             output = (logits,) + outputs[2:]
             return ((loss,) + output) if loss is not None else output
 
-        return SequenceClassifierOutput(
+        return CustomSequenceClassifierOutput(
             loss=loss,
             logits=logits,
             hidden_states=outputs.hidden_states,
+            last_hidden_state=outputs.last_hidden_state,
             attentions=outputs.attentions,
         )
 
