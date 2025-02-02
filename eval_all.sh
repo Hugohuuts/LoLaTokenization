@@ -6,7 +6,7 @@ tok_methods_adverserial=("adverserial_pos_synonym_noun" "adverserial_pos_synonym
 
 data_set_paths=(
     "data/multinli_1.0/multinli_1.0_dev_mismatched.jsonl"
-    "data/multinli_1.0/multinli_1.0_dev_matched.jsonl"
+    # "data/multinli_1.0/multinli_1.0_dev_matched.jsonl"
     "data/snli_1.0/snli_1.0_test.jsonl"
 )
 # or if locally
@@ -16,13 +16,13 @@ data_set_paths=(
 #     "snli_1.0_test.jsonl"
 # )
 
-# methods_to_loop=${tok_methods_pos[@]}
+methods_to_loop=${tok_methods_pos[@]}
 # methods_to_loop=${tok_methods_greedy[@]}
 # methods_to_loop=${tok_methods_length[@]}
-methods_to_loop=${tok_methods_adverserial[@]}
+# methods_to_loop=${tok_methods_adverserial[@]}
 
-models=("roberta" "minilm" "bart")
-# models=("minilm")
+# models=("roberta" "minilm" "bart")
+models=("minilm")
 for model in ${models[@]}; do
     maximum_threads=3
     if [ $model == "bart" ]; then # BART takes much more memory
