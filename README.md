@@ -30,6 +30,70 @@ req file
 
 ## Running the code
 
+## Results and Analysis
+
+### Table 1: Results for each model and tokenization combination, across all datasets
+
+We report the accuracy and distribution of predicted labels (formatted as such: contradiction/entailment/neutral).  
+Each table section presents results for a different model: **DistilRoBERTa**, **BART-Large**, and **MiniLM2**.  
+Each table is divided into sections according to the tokenization approach.  
+MNLI-M refers to the matched development set, and MNLI-MM refers to the mismatched development set.
+
+| Tokenization | SNLI (Acc, Label %) | MNLI-M (Acc, Label %) | MNLI-MM (Acc, Label %) |
+|-------------|---------------------|----------------------|----------------------|
+| **DistilRoBERTa** |  |  |  |
+| Native | 0.86 (24/50/26%) | 0.76 (27/41/32%) | 0.79 (22/52/26%) |
+| Character | 0.34 (0/99/1%) | 0.36 (1/97/2%) | 0.36 (1/97/2%) |
+| Noun | 0.87 (33/34/33%) | 0.80 (34/34/32%) | 0.81 (33/35/32%) |
+| Verb | 0.87 (33/35/32%) | 0.80 (33/34/33%) | 0.81 (33/35/32%) |
+| Adjective | 0.87 (33/34/33%) | 0.80 (33/34/33%) | 0.80 (33/35/32%) |
+| Greedy Suffix | 0.37 (5/94/1%) | 0.38 (5/91/4%) | 0.38 (5/92/3%) |
+| Greedy Prefix | 0.37 (4/94/2%) | 0.40 (5/91/4%) | 0.39 (5/91/4%) |
+| Unigram | **0.88 (33/34/33%)** | **0.82 (33/34/33%)** | **0.82 (33/35/32%)** |
+| ALS | 0.76 (35/30/35%) | 0.69 (33/29/38%) | 0.70 (32/30/38%) |
+| ANSS | 0.80 (34/33/33%) | 0.78 (34/31/35%) | 0.78 (33/33/34%) |
+
+| Tokenization | SNLI (Acc, Label %) | MNLI-M (Acc, Label %) | MNLI-MM (Acc, Label %) |
+|-------------|---------------------|----------------------|----------------------|
+| **BART-Large** |  |  |  |
+| Native | **0.90 (33/33/34%)** | 0.84 (31/30/39%) | 0.86 (30/32/38%) |
+| Character | 0.46 (12/59/29%) | 0.48 (18/60/22%) | 0.50 (17/62/21%) |
+| Noun | 0.86 (27/33/40%) | 0.86 (30/32/38%) | 0.86 (30/33/37%) |
+| Verb | 0.86 (28/33/39%) | 0.85 (31/32/37%) | 0.85 (30/33/37%) |
+| Adjective | 0.86 (28/33/39%) | 0.85 (30/32/38%) | 0.85 (30/32/38%) |
+| Greedy Suffix | 0.46 (42/50/8%) | 0.46 (37/45/18%) | 0.46 (37/44/19%) |
+| Greedy Prefix | 0.46 (40/52/8%) | 0.46 (31/52/17%) | 0.47 (32/51/17%) |
+| Unigram | **0.90 (33/33/34%)** | **0.88 (32/33/35%)** | **0.88 (32/33/35%)** |
+| ALS | 0.78 (34/27/39%) | 0.74 (33/25/42%) | 0.75 (33/26/41%) |
+| ANSS | 0.83 (34/32/34%) | 0.83 (33/30/37%) | 0.84 (32/30/37%) |
+
+| Tokenization | SNLI (Acc, Label %) | MNLI-M (Acc, Label %) | MNLI-MM (Acc, Label %) |
+|-------------|---------------------|----------------------|----------------------|
+| **MiniLM2** |  |  |  |
+| Native | 0.88 (34/46/20%) | 0.80 (29/39/32%) | 0.82 (29/51/20%) |
+| Character | 0.34 (3/97/0%) | 0.36 (7/92/1%) | 0.37 (6/93/1%) |
+| Noun | 0.78 (31/36/33%) | 0.83 (34/33/33%) | 0.83 (33/34/33%) |
+| Verb | 0.68 (35/44/21%) | 0.82 (34/33/33%) | 0.83 (33/34/33%) |
+| Adjective | 0.66 (33/41/26%) | 0.82 (34/33/33%) | 0.83 (33/34/33%) |
+| Greedy Suffix | 0.40 (57/42/1%) | 0.39 (44/55/1%) | 0.40 (42/57/1%) |
+| Greedy Prefix | 0.44 (46/53/1%) | 0.40 (34/65/1%) | 0.41 (34/65/1%) |
+| Unigram | **0.89 (33/34/33%)** | **0.84 (33/34/33%)** | **0.85 (33/35/32%)** |
+| ALS | 0.76 (36/30/34%) | 0.71 (37/27/36%) | 0.72 (34/29/37%) |
+| ANSS | 0.81 (34/32/34%) | 0.80 (34/31/35%) | 0.81 (33/32/35%) |
+
+---
+
+### Table 2: Modification rate for POS tokenizers
+
+Modification rate refers to the percentage of words within the SNLI dataset that are successfully split into their morphological components and change as a result.  
+Words included in MorphoLex but not changed by this transformation do not contribute to this percentage.
+
+| POS Tokenizer | Modification Rate (%) |
+|--------------|----------------------|
+| Noun        | 8.7%  |
+| Verb        | 10.3% |
+| Adjective   | 1.6%  |
+
 ## Contact
 
 We would love to get feedback from the community. If you have any questions, please open an issue or contact us.
