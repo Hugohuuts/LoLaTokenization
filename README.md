@@ -108,7 +108,7 @@ This repository is developed by the following students from Utrecht University (
 
 ## Acknowledgements
 
-First of all, we would like to thank Dr. Lasha Abzianidze PhD, for his guidance and feedback throughout this project.
+First of all, we would like to thank Dr. Lasha Abzianidze PhD [GitHub](https://github.com/kovvalsky) & [Website](https://naturallogic.pro), for his guidance and feedback throughout this project.
 His expertise and insights have significantly shaped the direction and execution of our research.
 Secondly, we are thankful for the students, participating in the course Logic and Language 24/25 at Utrecht University , for their presentations, broadening our knowledge on the topic of NLI.
 Finally, we would like to recognize the strength of the open-source models and datasets, especially those used in our experiment, highlighting how collaborative efforts facilitate new research.
