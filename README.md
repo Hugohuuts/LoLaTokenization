@@ -16,7 +16,7 @@ We will be exploring the impact of different tokenization techniques on Natural 
 ## Objectives
 
 - Investigate how different tokenization strategies affect NLI model performance.
-- Use the SNLI dataset (and possibly othe NLI datasets, like MNLI) for testing and comparison.
+- Use the SNLI and MNLI datasets for testing and comparison.
 
 ## Repository Structure
 
@@ -24,13 +24,10 @@ Main folder: LoLaTokenization
 
 ## Getting Started
 
-Different Jupyter Notebooks can be downloaded.
+The results can be presented visually through methods within the eval_accuracy Notebook
 
 ## Contributions
 
 Work on assigned tasks in personal branches.
 Push updates regularly for review in weekly meetings.
 
-## Notes
-
-This README will be updated as the project progresses to reflect more specific details and instructions.
