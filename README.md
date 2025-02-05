@@ -58,7 +58,7 @@ where:
 * `--tok_method` expects the name of a tokenization strategy (check out `tokenization_methods/method_mapping.py` to see all valid names)
 * `--do_custom` is a boolean flag whose presence indicates that the loaded tokenization method is custom-made (omit this flag if you would like to run the script using a model's native tokenizer). 
 
-Alternatively, you can run `walkthrough.ipynb` for a more interactive approach.
+Alternatively, you can run `walkthrough.ipynb` to see examples on how our costumised tokenizers compare to the native tokenizers.
 
 
 ## Results and Analysis
