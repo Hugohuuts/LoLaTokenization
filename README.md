@@ -36,11 +36,11 @@ We would love to get feedback from the community. If you have any questions, ple
 
 This repository is developed by the following students from Utrecht University (UU) as part of the course Logic and Language:
 
-- [Yme Boland](mailto:y.m.dejong%40students.uu.nl?subject=UU%20LoLa%20Tokenization%20Project)
+- Yme Boland: [E-mail](mailto:y.m.dejong%40students.uu.nl?subject=UU%20LoLa%20Tokenization%20Project), [GitHub](https://github.com/6950167)
 - [Shane Siwpersad](mailto:s.r.d.siwpersad%40students.uu.nl?subject=UU%20LoLa%20Tokenization%20Project)
-- [Eduard Köntöş](mailto:e.r.kontos%40students.uu.nl?subject=UU%20LoLa%20Tokenization%20Project)
-- [Hugo Voorheijen](mailto:h.j.a.voorheijen%40students.uu.nl?subject=UU%20LoLa%20Tokenization%20Project)
-- [Julius Bijkerk](mailto:j.j.bijkerk%40students.uu.nl?subject=UU%20LoLa%20Tokenization%20Project)
+- [Eduard Köntöş](mailto:e.r.kontos%40students.uu.nl?subject=UU%20LoLa%20Tokenization%20Project), [GitHub]([https://pages.github.com/](https://github.com/6950167))
+- [Hugo Voorheijen](mailto:h.j.a.voorheijen%40students.uu.nl?subject=UU%20LoLa%20Tokenization%20Project), [GitHub]([https://pages.github.com/](https://github.com/6950167))
+- [Julius Bijkerk](mailto:j.j.bijkerk%40students.uu.nl?subject=UU%20LoLa%20Tokenization%20Project), [GitHub]([https://pages.github.com/](https://github.com/6950167))
 
 ## Acknowledgements
 
