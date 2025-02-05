@@ -1,8 +1,8 @@
-from tokenization_methods.character_split import custom_tokenization
-from tokenization_methods.tokenizers_pos import noun_tokenizer, verb_tokenizer, adjective_tokenizer
+from tokenization_methods.character_tokenizer import custom_tokenization
+from tokenization_methods.pos_tokenizer import noun_tokenizer, verb_tokenizer, adjective_tokenizer
 from tokenization_methods.length_tokenizer import unigram_tokenizer
 from tokenization_methods.greedy_tokenizer import greedy_prefix_tokenization, greedy_suffix_tokenization, greedy_longest_tokenization
-from tokenization_methods.adverserial_tokenization import adverserial_shuffle_letters, adverserial_shuffle_tokens_one, adverserial_shuffle_tokens_one_neighbour, adverserial_pos_synonym_noun, adverserial_pos_synonym_verb
+from tokenization_methods.adverserial_tokenizer import adverserial_shuffle_letters, adverserial_shuffle_tokens_one, adverserial_shuffle_tokens_one_neighbour, adverserial_pos_synonym_noun, adverserial_pos_synonym_verb
 
 TOK_METHOD_MAP = {
     "verb": verb_tokenizer,

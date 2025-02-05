@@ -31,6 +31,11 @@ We provide a `requirements.txt` file to replicate our programming enviroment. Ru
 pip install -r requirements.txt
 ```
 
+Since we are using spaCy to run our POS tokenizers, please download the following model as well:
+```
+python -m spacy download en_core_web_sm
+```
+
 ## Running the code
 
 To reproduce our results, you need to run `eval_all.sh` which will go through all datasets, models, and tokenization strategies and generate a `jsonl` file with the following naming convention: `dataset-tokenization-model.jsonl`.
