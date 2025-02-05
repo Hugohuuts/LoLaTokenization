@@ -16,7 +16,7 @@ We will be exploring the impact of different tokenization techniques on Natural 
 ## Objectives
 
 - Investigate how different tokenization strategies affect NLI model performance.
-- Use the SNLI dataset (and possibly othe NLI datasets, like MNLI) for testing and comparison.
+- Use the SNLI and MNLI datasets for testing and comparison.
 
 ## Repository Structure
 
