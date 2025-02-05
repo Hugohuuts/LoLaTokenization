@@ -1,13 +1,5 @@
 # Custom Tokenization and NLI Performance
 
-By:
-
-- Yme Boland
-- Shane Siwpersad
-- Eduard Köntöş
-- Hugo Voorheijen
-- Julius Bijkerk
-
 ## Project Overview
 
 This repository is part of a group project for the Logic and Language course at Utrecht Univerity, taught by Dr. Lasha Abzianidze PhD.
@@ -37,3 +29,91 @@ We will be exploring the impact of different tokenization techniques on Natural 
 req file
 
 ## Running the code
+
+## Contact
+
+We would love to get feedback from the community. If you have any questions, please open an issue or contact us.
+
+This repository is developed by the following students from Utrecht University (UU) as part of the course Logic and Language:
+
+- [Yme Boland](mailto:y.m.dejong%40students.uu.nl?subject=UU%20LoLa%20Tokenization%20Project)
+- [Shane Siwpersad](mailto:s.r.d.siwpersad%40students.uu.nl?subject=UU%20LoLa%20Tokenization%20Project)
+- [Eduard Köntöş](mailto:e.r.kontos%40students.uu.nl?subject=UU%20LoLa%20Tokenization%20Project)
+- [Hugo Voorheijen](mailto:h.j.a.voorheijen%40students.uu.nl?subject=UU%20LoLa%20Tokenization%20Project)
+- [Julius Bijkerk](mailto:j.j.bijkerk%40students.uu.nl?subject=UU%20LoLa%20Tokenization%20Project)
+
+## Acknowledgements
+
+First of all, we would like to thank Dr. Lasha Abzianidze PhD, for his guidance and feedback throughout this project.
+His expertise and insights have significantly shaped the direction and execution of our research.
+Secondly, we are thankful for the students, participating in the course Logic and Language 24/25 at Utrecht University , for their presentations, broadening our knowledge on the topic of NLI.
+Finally, we would like to recognize the strength of the open-source models and datasets, especially those used in our experiment, highlighting how collaborative efforts facilitate new research.
+
+## References
+
+We have used and built upon the work of others, the list below represents the most important sources that formed a basis of our work.
+
+- **WordNet** — [wordnet.princeton.edu](https://wordnet.princeton.edu/). [Accessed 02-02-2025].
+
+- **Samuel R. Bowman, Gabor Angeli, Christopher Potts, and Christopher D. Manning.** 2015.  
+  *A large annotated corpus for learning natural language inference.*  
+  In *Proceedings of the 2015 Conference on Empirical Methods in Natural Language Processing*, pages 632–642, Lisbon, Portugal.  
+  Association for Computational Linguistics.
+
+- **Yupeng Chang, Xu Wang, Jindong Wang, Yuan Wu, Linyi Yang, Kaijie Zhu, Hao Chen, Xiaoyuan Yi, Cunxiang Wang, Yidong Wang, et al.** 2024.  
+  *A survey on evaluation of large language models.*  
+  *ACM Transactions on Intelligent Systems and Technology*, 15(3):39:2.
+
+- **Jeremy Howard and Sebastian Ruder.** 2018.  
+  *Universal language model fine-tuning for text classification.*  
+  arXiv preprint [arXiv:1801.06146](https://arxiv.org/abs/1801.06146).
+
+- **Sander Land and Max Bartolo.** 2024.  
+  *Fishing for magikarp: Automatically detecting under-trained tokens in large language models.*  
+  In *Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing*, pages 11631–11646, Miami, Florida, USA.  
+  Association for Computational Linguistics.
+
+- **Mike Lewis, Yinhan Liu, Naman Goyal, Marjan Ghazvininejad, Abdelrahman Mohamed, Omer Levy, Veselin Stoyanov, and Luke Zettlemoyer.** 2019.  
+  *BART: Denoising sequence-to-sequence pre-training for natural language generation, translation, and comprehension.*  
+  CoRR, [abs/1910.13461](https://arxiv.org/abs/1910.13461).
+
+- **Scott Lundberg.** 2017.  
+  *A unified approach to interpreting model predictions.*  
+  arXiv preprint [arXiv:1705.07874](https://arxiv.org/abs/1705.07874).
+
+- **Yixin Nie, Adina Williams, Emily Dinan, Mohit Bansal, Jason Weston, and Douwe Kiela.** 2019.  
+  *Adversarial NLI: A new benchmark for natural language understanding.*  
+  arXiv preprint [arXiv:1910.14599](https://arxiv.org/abs/1910.14599).
+
+- **Nils Reimers and Iryna Gurevych.** 2019.  
+  *Sentence-BERT: Sentence embeddings using Siamese BERT-networks.*  
+  In *Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing.*  
+  Association for Computational Linguistics.
+
+- **Tom Roth, Yansong Gao, Alsharif Abuadbba, Surya Nepal, and Wei Liu.** 2024.  
+  *Token-modification adversarial attacks for natural language processing: A survey.*  
+  *AI Communications*, 37(4):655–676.
+
+- **Claudia H. Sánchez-Gutiérrez, Hugo Mailhot, S. Hélène Deacon, and Maximiliano A. Wilson.** 2018.  
+  *MorphoLex: A derivational morphological database for 70,000 English words.*  
+  *Behavior Research Methods*, 50:1568–1580.
+
+- **Victor Sanh, Lysandre Debut, Julien Chaumond, and Thomas Wolf.** 2019.  
+  *DistilBERT, a distilled version of BERT: Smaller, faster, cheaper and lighter.*  
+  CoRR, [abs/1910.01108](https://arxiv.org/abs/1910.01108).
+
+- **Rico Sennrich, Barry Haddow, and Alexandra Birch.** 2015.  
+  *Neural machine translation of rare words with subword units.*  
+  CoRR, [abs/1508.07909](https://arxiv.org/abs/1508.07909).
+
+- **Omri Uzan, Craig W. Schmidt, Chris Tanner, and Yuval Pinter.** 2024.  
+  *Greed is all you need: An evaluation of tokenizer inference methods.*
+
+- **Adina Williams, Nikita Nangia, and Samuel Bowman.** 2018.  
+  *A broad-coverage challenge corpus for sentence understanding through inference.*  
+  In *Proceedings of the 2018 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long Papers)*, pages 1112–1122, New Orleans, Louisiana.  
+  Association for Computational Linguistics.
+
+- **Yonghui Wu, Mike Schuster, Zhifeng Chen, Quoc V. Le, Mohammad Norouzi, Wolfgang Macherey, Maxim Krikun, Yuan Cao, Qin Gao, Klaus Macherey, Jeff Klingner, Apurva Shah, Melvin Johnson, Xiaobing Liu, Lukasz Kaiser, Stephan Gouws, Yoshikiyo Kato, Taku Kudo, Hideto Kazawa, Keith Stevens, George Kurian, Nishant Patil, Wei Wang, Cliff Young, Jason Smith, Jason Riesa, Alex Rudnick, Oriol Vinyals, Greg Corrado, Macduff Hughes, and Jeffrey Dean.** 2016.  
+  *Google’s neural machine translation system: Bridging the gap between human and machine translation.*  
+  CoRR, [abs/1609.08144](https://arxiv.org/abs/1609.08144).
