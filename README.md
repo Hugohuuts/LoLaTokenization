@@ -26,7 +26,10 @@ We will be exploring the impact of different tokenization techniques on Natural 
 
 ## Environment Setup
 
-req file
+We provide a `requirements.txt` file to replicate our programming enviroment. Run the command below to install all of the necessary dependencies using `pip`:
+```
+pip install -r requirements.txt
+```
 
 ## Running the code
 
