@@ -24,7 +24,9 @@ Main folder: LoLaTokenization
 
 ## Getting Started
 
-The results can be presented visually through methods within the eval_accuracy Notebook
+The results can be presented visually through methods within the eval_accuracy Notebook file.
+To run an experiment, use eval_scripts.py with the desired parameters as such: 
+python eval_scripts.py --path "data/multinli_1.0/multinli_1.0_dev_mismatched.jsonl" --tok_method adj --model roberta --do_custom true
 
 ## Contributions
 
