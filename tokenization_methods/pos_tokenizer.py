@@ -68,13 +68,14 @@ def pos_tokenizer(sentence, tags, separator, special_marker):
         A string of the tokenized sentence
     """
     tokenized = []
-    for token in NLP(sentence):
+    for idx, token in enumerate(NLP(sentence)):
+      aux_special_marker = "" if idx == 0 else special_marker # don't put space marker for the first token in a sentence bcs there are no spaces in the beginning!
       if token.pos_ in tags:
          split = get_morphological_components(token.text, separator)
-         split[0] = f"{special_marker}{split[0]}"
+         split[0] = f"{aux_special_marker}{split[0]}"
          tokenized.extend(split)
       else:
-        tokenized.append(f"{special_marker}{token.text}")
+        tokenized.append(f"{aux_special_marker}{token.text}")
     return tokenized
 
 def noun_tokenizer(premises_hypothesis, separator, space_marker):
