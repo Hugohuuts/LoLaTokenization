@@ -2,11 +2,12 @@ tok_methods_pos=("adj" "char" "noun" "verb")
 tok_methods_length=("unigram_tokenizer")
 tok_methods_greedy=("greedy_prefix_tokenization" "greedy_suffix_tokenization" "greedy_longest_tokenization")
 tok_methods_adverserial=("adverserial_shuffle_letters" "adverserial_pos_synonym_noun")
+
 tok_methods_all=("adj" "char" "noun" "verb" "unigram_tokenizer" "greedy_prefix_tokenization" "greedy_suffix_tokenization" "greedy_longest_tokenization" "adverserial_shuffle_letters" "adverserial_pos_synonym_noun")
 
 data_set_paths=(
     "data/multinli_1.0/multinli_1.0_dev_mismatched.jsonl"
-    # "data/multinli_1.0/multinli_1.0_dev_matched.jsonl"
+    "data/multinli_1.0/multinli_1.0_dev_matched.jsonl"
     "data/snli_1.0/snli_1.0_test.jsonl"
 )
 # or if locally

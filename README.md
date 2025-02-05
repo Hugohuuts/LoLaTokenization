@@ -33,20 +33,28 @@ pip install -r requirements.txt
 
 ## Running the code
 
-To reproduce our results, you need to run `eval_all.sh` which will go through all datasets, models, and tokenization strategies and generate a `jsonl` file with the following nameing convention: `dataset-tokenization-model.jsonl`.
+To reproduce our results, you need to run `eval_all.sh` which will go through all datasets, models, and tokenization strategies and generate a `jsonl` file with the following naming convention: `dataset-tokenization-model.jsonl`.
 
-However, it is also possible to run a single experiment by running `eval_scripts.py` directly as follows:
+It is very important that you have the original SNLI and MNLI (matched and mismatched) `jsonl` files structured like this: 
+* MNLI-MM: `data/multinli_1.0/multinli_1.0_dev_mismatched.jsonl`
+* MNLI-M: `data/multinli_1.0/multinli_1.0_dev_matched.jsonl`
+* SNLI: `data/snli_1.0/snli_1.0_test.jsonl`
+
+However, it is also possible to have the aforementioned `jsonl` files in the same directory as the bash script; you would need to go inside `eval_all.sh` to lines 14-18 and uncomment them.
+
+To run a single experiment, you can run `eval_scripts.py` as follows:
 ```
 python eval_scripts.py --path <path-to-data-jsonl> --tok_method <tokenization-approach> --model <model-name> --do_custom
 ```
-
-Alternatively, you can run `walkthrough.ipynb` for a more interactive approach.
 
 where:
 * `--path` expects the path to the original `jsonl` (from SNLI or MNLI)
 * `--model` expects `bart`, `roberta`, or `minilm`
 * `--tok_method` expects the name of a tokenization strategy (check out `tokenization_methods/method_mapping.py` to see all valid names)
 * `--do_custom` is a boolean flag whose presence indicates that the loaded tokenization method is custom-made (omit this flag if you would like to run the script using a model's native tokenizer). 
+
+Alternatively, you can run `walkthrough.ipynb` for a more interactive approach.
+
 
 ## Results and Analysis
 
