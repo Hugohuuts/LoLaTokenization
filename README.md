@@ -1,4 +1,4 @@
-# Custom Tokenization and NLI Performance
+# Tokenization & Inference in NLI: A Comparative Study of Methods and Models
 
 ## Project Overview
 
